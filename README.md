@@ -37,7 +37,14 @@ no-context result.
 - `POST /api/regulations/compliance-checklist/stream`: progressive RAG checklist.
 - `POST /api/regulations/compliance-checklist`: JSON RAG checklist.
 - `POST /api/regulations/documents`: asynchronously index reviewed source text.
+- `POST /api/regulations/documents/pdf`: extract and index reviewed PDF sources in bounded, overlapping chunks.
 - `GET /actuator/health`: service health.
+
+To import an official PDF, download it from the municipality's document repository,
+set `NORMBUILD_INGESTION_API_KEY`, and run `scripts/ingest-official-pdf.ps1` with
+the file path and the exact HTTPS `.gov.co` URL. Scanned PDFs without selectable
+text are rejected; OCR review must be performed before ingestion. Re-importing
+the same source sections does not create duplicate vector records.
 
 Request and response contracts are maintained in the DTO records. User-facing
 messages are Spanish; identifiers, comments and commit messages are English.
