@@ -6,6 +6,8 @@ import com.normbuild.regulation.dto.DocumentIngestionRequest;
 import com.normbuild.regulation.dto.DocumentIngestionResponse;
 import com.normbuild.regulation.dto.PdfDocumentIngestionRequest;
 import com.normbuild.regulation.dto.PdfDocumentIngestionResponse;
+import com.normbuild.regulation.dto.JurisdictionCoverageResponse;
+import com.normbuild.regulation.repository.RegulatoryDocumentJdbcRepository;
 import com.normbuild.regulation.service.RegulatoryRagService;
 import com.normbuild.regulation.service.RegulatoryPdfIngestionService;
 import jakarta.validation.Valid;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -40,14 +43,22 @@ public class RegulationController {
     private final RegulatoryRagService ragService;
     private final RegulatoryPdfIngestionService pdfIngestionService;
     private final String ingestionApiKey;
+    private final RegulatoryDocumentJdbcRepository documentRepository;
 
     public RegulationController(
             RegulatoryRagService ragService,
             RegulatoryPdfIngestionService pdfIngestionService,
+            RegulatoryDocumentJdbcRepository documentRepository,
             @Value("${normbuild.security.ingestion-api-key:}") String ingestionApiKey) {
         this.ragService = ragService;
         this.pdfIngestionService = pdfIngestionService;
+        this.documentRepository = documentRepository;
         this.ingestionApiKey = ingestionApiKey;
+    }
+
+    @GetMapping("/coverage")
+    public List<JurisdictionCoverageResponse> getCoverage() {
+        return documentRepository.findJurisdictionCoverage();
     }
 
     @PostMapping("/compliance-checklist")

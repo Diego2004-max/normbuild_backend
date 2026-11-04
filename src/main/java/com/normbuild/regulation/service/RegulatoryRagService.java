@@ -95,7 +95,7 @@ public class RegulatoryRagService {
         CompletableFuture<List<RegulatoryDocumentProjection>> contextFuture = embeddingFuture.thenApplyAsync(embedding -> {
             String vectorLiteral = embeddingFormatter.toVectorLiteral(embedding);
             return documentRepository.findNearestRegulations(
-                    request.jurisdiction(),
+                    JurisdictionNormalizer.canonicalize(request.jurisdiction()),
                     vectorLiteral,
                     properties.similarityThreshold(),
                     properties.maxContextResults()
@@ -136,16 +136,17 @@ public class RegulatoryRagService {
     @Transactional
     public CompletableFuture<DocumentIngestionResponse> ingestDocument(DocumentIngestionRequest request) {
         validateOfficialSource(request.sourceUrl());
+        String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
         CompletableFuture<String> normalizedFuture = parsingService.normalizeContentAsync(request.content());
         CompletableFuture<String> summaryFuture = parsingService.buildSearchSummaryAsync(request.content());
         return normalizedFuture.thenCombineAsync(summaryFuture, (normalized, summary) -> {
             List<Double> embedding = embeddingClient.createEmbedding(summary + "\n" + normalized);
-            UUID documentId = UUID.nameUUIDFromBytes((request.jurisdiction().strip().toLowerCase(java.util.Locale.ROOT)
+            UUID documentId = UUID.nameUUIDFromBytes((jurisdiction.toLowerCase(java.util.Locale.ROOT)
                     + "|" + request.sourceUrl() + "|" + request.articleReference().strip() + "|" + normalized)
                     .getBytes(StandardCharsets.UTF_8));
             DocumentIngestionRequest normalizedRequest = new DocumentIngestionRequest(
                     request.title(),
-                    request.jurisdiction(),
+                    jurisdiction,
                     request.regulationCode(),
                     request.articleReference(),
                     request.sourceUrl(),

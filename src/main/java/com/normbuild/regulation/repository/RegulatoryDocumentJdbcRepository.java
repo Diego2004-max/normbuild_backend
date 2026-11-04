@@ -3,7 +3,11 @@ package com.normbuild.regulation.repository;
 import com.normbuild.regulation.dto.DocumentIngestionRequest;
 import java.sql.PreparedStatement;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import com.normbuild.regulation.dto.JurisdictionCoverageResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -35,5 +39,29 @@ public class RegulatoryDocumentJdbcRepository {
             statement.setObject(9, OffsetDateTime.now());
             return statement;
         });
+    }
+
+    public List<JurisdictionCoverageResponse> findJurisdictionCoverage() {
+        List<JurisdictionCoverageResponse> indexed = jdbcTemplate.query("""
+                SELECT jurisdiction,
+                       COUNT(*) AS indexed_sections,
+                       COUNT(DISTINCT source_url) AS official_sources,
+                       MAX(created_at) AS last_indexed_at
+                FROM regulatory_documents
+                GROUP BY jurisdiction
+                ORDER BY jurisdiction
+                """, (result, rowNumber) -> {
+            long sections = result.getLong("indexed_sections");
+            long sources = result.getLong("official_sources");
+            OffsetDateTime lastIndexedAt = result.getObject("last_indexed_at", OffsetDateTime.class);
+            String status = sources > 0 ? "AVAILABLE" : "NO_OFFICIAL_SOURCE";
+            return new JurisdictionCoverageResponse(result.getString("jurisdiction"), sections, sources, lastIndexedAt, status);
+        });
+        Map<String, JurisdictionCoverageResponse> coverage = new LinkedHashMap<>();
+        for (String jurisdiction : List.of("Bogotá D.C.", "Pasto", "Medellín", "Cali", "Bucaramanga", "Barranquilla", "Cartagena")) {
+            coverage.put(jurisdiction, new JurisdictionCoverageResponse(jurisdiction, 0, 0, null, "NO_OFFICIAL_SOURCE"));
+        }
+        indexed.forEach(item -> coverage.put(item.jurisdiction(), item));
+        return List.copyOf(coverage.values());
     }
 }
