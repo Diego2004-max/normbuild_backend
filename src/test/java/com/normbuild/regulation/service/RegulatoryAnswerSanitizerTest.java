@@ -60,13 +60,13 @@ class RegulatoryAnswerSanitizerTest {
                 new CitedRegulationResponse(UUID.randomUUID(), "POT Medellin", "Acuerdo Municipal 048 de 2014",
                         "Articulo 282 (parte 1 de 2)", "https://www.medellin.gov.co/pot.pdf", 0.8, "Indice de ocupacion, tratamiento y patios y vacios."));
 
-        String answer = sanitizer.sanitize("La norma depende de la ficha del predio.\nPara verificar las reglas, sigue estos pasos:\n\n", analysis, citations,
+        String answer = sanitizer.sanitize("La norma depende de la ficha del predio.\nPara verificar las reglas, sigue estos pasos:\n\nVerificacion de indices\n\n", analysis, citations,
                 "Vivienda unifamiliar en Medellin.");
 
         assertThat(answer).contains("280", "pol", "[1]");
         assertThat(answer).contains("282", "patios y", "[2]");
         assertThat(answer).contains("50% propuesto");
-        assertThat(answer).doesNotContain("sigue estos pasos");
+        assertThat(answer).doesNotContain("sigue estos pasos", "Verificacion de indices");
     }
 
     @Test
@@ -81,5 +81,23 @@ class RegulatoryAnswerSanitizerTest {
         String answer = sanitizer.sanitize("Revisa la normativa.", analysis, citations, "Casa unifamiliar.");
 
         assertThat(answer).doesNotContain("c?digo morfol?gico", "edificaci?n es aislada");
+    }
+
+    @Test
+    void explainsBucaramangaNetAreaAndMaximumIndexRulesWithCitations() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(
+                180.0, 90.0, 180.0, BigDecimal.valueOf(0.5), BigDecimal.ONE,
+                BigDecimal.valueOf(90), List.of());
+        List<CitedRegulationResponse> citations = List.of(
+                new CitedRegulationResponse(UUID.randomUUID(), "POT Bucaramanga", "Acuerdo Municipal 011 de 2014",
+                        "Articulo 310", "https://www.bucaramanga.gov.co/pot.pdf", 0.8, "Los indices aplican sobre area neta."),
+                new CitedRegulationResponse(UUID.randomUUID(), "POT Bucaramanga", "Acuerdo Municipal 011 de 2014",
+                        "Articulo 313", "https://www.bucaramanga.gov.co/pot.pdf", 0.8, "Los proyectos no pueden superar indices."));
+
+        String answer = sanitizer.sanitize("Revisa los indices del predio.", analysis, citations,
+                "Vivienda unifamiliar en lote urbano.");
+
+        assertThat(answer).contains("neta del predio", "180 m", "[1]");
+        assertThat(answer).contains("no debe superar", "excepciones", "[2]");
     }
 }

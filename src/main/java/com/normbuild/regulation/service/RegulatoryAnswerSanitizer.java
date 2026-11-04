@@ -43,7 +43,7 @@ public class RegulatoryAnswerSanitizer {
             sections.add(proposedRatios);
         }
         String safeChecklist = String.join("\n", safeLines)
-                .replaceAll("(?im)^.*\\bpasos\\s*:\s*(?:\\R\\s*\\R|$)", "");
+                .replaceAll("(?im)^.*(?:pasos:|Verificaci.n de .ndices)\\s*(?:\\R\\s*\\R|$)", "");
         if (!safeChecklist.isBlank()) {
             sections.add(safeChecklist);
         }
@@ -93,6 +93,19 @@ public class RegulatoryAnswerSanitizer {
                         + "n tratamiento y mixtura; para viviendas uni, bi y trifamiliares remite a las normas de patios y vac" + (char) 237
                         + "os. Confirma la categor" + (char) 237 + "a y la ficha normativa del predio antes de evaluar el 50% propuesto ["
                         + citationNumber + "].");
+            }
+            if (reference != null && reference.matches("(?iu).*\\b310\\b.*")
+                    && citations.get(index).regulationCode().contains("011 de 2014")) {
+                checks.add("En Bucaramanga, el art" + (char) 237 + "culo 310 indica que los " + (char) 237
+                        + "ndices normativos se aplican sobre el " + (char) 225 + "rea neta del predio, salvo en tratamiento de renovaci" + (char) 243
+                        + "n en modalidad de redesarrollo. El 50% y 100% calculados usan los 180 m" + (char) 178
+                        + " declarados; confirma el " + (char) 225 + "rea neta antes de compararlos con la norma [" + citationNumber + "].");
+            }
+            if (reference != null && reference.matches("(?iu).*\\b313\\b.*")
+                    && citations.get(index).regulationCode().contains("011 de 2014")) {
+                checks.add("El art" + (char) 237 + "culo 313 establece que el proyecto no debe superar los " + (char) 237
+                        + "ndices normativos, salvo excepciones o bonificaciones previstas en el POT. Consulta la ficha normativa para conocer los " + (char) 237
+                        + "ndices aplicables al predio [" + citationNumber + "].");
             }
         }
         if (checks.isEmpty()) {
