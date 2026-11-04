@@ -9,10 +9,12 @@ import com.normbuild.regulation.dto.PdfDocumentIngestionResponse;
 import com.normbuild.regulation.dto.JurisdictionCoverageResponse;
 import com.normbuild.regulation.dto.OfficialSourceSearchRequest;
 import com.normbuild.regulation.dto.OfficialSourceSearchResponse;
+import com.normbuild.regulation.dto.OfficialSourceImportRequest;
 import com.normbuild.regulation.repository.RegulatoryDocumentJdbcRepository;
 import com.normbuild.regulation.service.RegulatoryRagService;
 import com.normbuild.regulation.service.RegulatoryPdfIngestionService;
 import com.normbuild.regulation.service.OfficialSourceDiscoveryService;
+import com.normbuild.regulation.service.OfficialPdfSourceImportService;
 import jakarta.validation.Valid;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,17 +50,20 @@ public class RegulationController {
     private final String ingestionApiKey;
     private final RegulatoryDocumentJdbcRepository documentRepository;
     private final OfficialSourceDiscoveryService sourceDiscoveryService;
+    private final OfficialPdfSourceImportService sourceImportService;
 
     public RegulationController(
             RegulatoryRagService ragService,
             RegulatoryPdfIngestionService pdfIngestionService,
             RegulatoryDocumentJdbcRepository documentRepository,
             OfficialSourceDiscoveryService sourceDiscoveryService,
+            OfficialPdfSourceImportService sourceImportService,
             @Value("${normbuild.security.ingestion-api-key:}") String ingestionApiKey) {
         this.ragService = ragService;
         this.pdfIngestionService = pdfIngestionService;
         this.documentRepository = documentRepository;
         this.sourceDiscoveryService = sourceDiscoveryService;
+        this.sourceImportService = sourceImportService;
         this.ingestionApiKey = ingestionApiKey;
     }
 
@@ -71,6 +76,15 @@ public class RegulationController {
     public CompletableFuture<OfficialSourceSearchResponse> searchOfficialSources(
             @Valid @RequestBody OfficialSourceSearchRequest request) {
         return sourceDiscoveryService.search(request);
+    }
+
+    @PostMapping("/documents/pdf/from-official-url")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CompletableFuture<PdfDocumentIngestionResponse> importReviewedOfficialPdf(
+            @Valid @RequestBody OfficialSourceImportRequest request,
+            @RequestHeader(value = "X-NormBuild-Ingestion-Key", required = false) String providedKey) {
+        authorizeIngestion(providedKey);
+        return sourceImportService.importReviewedSource(request);
     }
 
     @PostMapping("/compliance-checklist")

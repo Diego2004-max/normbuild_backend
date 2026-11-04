@@ -34,8 +34,20 @@ public class RegulatoryPdfIngestionService {
             String jurisdiction,
             String regulationCode,
             String sourceUrl) {
+        return ingest(readBytes(file), title, jurisdiction, regulationCode, sourceUrl);
+    }
+
+    public CompletableFuture<PdfDocumentIngestionResponse> ingest(
+            byte[] pdfBytes,
+            String title,
+            String jurisdiction,
+            String regulationCode,
+            String sourceUrl) {
+        if (pdfBytes == null || pdfBytes.length < 5 || pdfBytes.length > 40L * 1024 * 1024) {
+            throw new IllegalArgumentException("El PDF debe tener entre 5 bytes y 40 MB.");
+        }
         UUID sourceDocumentId = UUID.randomUUID();
-        return documentParsingService.extractPdfTextAsync(readBytes(file))
+        return documentParsingService.extractPdfTextAsync(pdfBytes)
                 .thenCompose(text -> indexChunks(text, title, jurisdiction, regulationCode, sourceUrl)
                         .thenApply(count -> new PdfDocumentIngestionResponse(sourceDocumentId, count, "INDEXED")));
     }
