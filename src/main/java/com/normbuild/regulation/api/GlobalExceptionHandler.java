@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,6 +27,15 @@ public class GlobalExceptionHandler {
         return new ApiErrorResponse("La solicitud contiene datos inválidos.", details, OffsetDateTime.now());
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleUnreadableRequest() {
+        return new ApiErrorResponse(
+                "El cuerpo de la solicitud debe ser un JSON válido codificado en UTF-8.",
+                List.of("JSON malformado o codificación UTF-8 inválida."),
+                OffsetDateTime.now()
+        );
+    }
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiErrorResponse handleUnexpected(Exception exception) {

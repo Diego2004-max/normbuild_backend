@@ -48,6 +48,8 @@ public class RegulatoryDocumentJdbcRepository {
                        COUNT(DISTINCT source_url) AS official_sources,
                        MAX(created_at) AS last_indexed_at
                 FROM regulatory_documents
+                WHERE source_url IS NOT NULL
+                  AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
                 GROUP BY jurisdiction
                 ORDER BY jurisdiction
                 """, (result, rowNumber) -> {

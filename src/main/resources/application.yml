@@ -14,7 +14,7 @@ spring:
     async:
       request-timeout: 180000
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/normbuild}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5435/normbuild}
     username: ${DATABASE_USERNAME:normbuild}
     password: ${DATABASE_PASSWORD:normbuild}
   jpa:

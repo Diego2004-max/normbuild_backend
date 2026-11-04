@@ -12,7 +12,7 @@ Spring Boot API for project analysis and source-grounded regulatory guidance.
 ## Local setup
 
 1. Copy `.env.example` to `.env` and set private database and ingestion secrets.
-2. Start the isolated PostgreSQL/pgvector container with `docker compose up -d database`. It binds to `127.0.0.1:5433`, so it does not collide with a PostgreSQL service already using port 5432.
+2. Start the isolated PostgreSQL/pgvector container with `docker compose up -d database`. It binds to `127.0.0.1:5435`, so it avoids the local PostgreSQL services already using ports 5432 and 5433.
 3. Pull the local models with `ollama pull llama3.1` and `ollama pull nomic-embed-text`.
 4. Run `scripts/start-local-ai.ps1`. It starts a separate CPU AVX2 Ollama endpoint on port 11435, avoiding CUDA runner failures while leaving the regular Ollama server on port 11434 untouched.
 5. Start the API with `mvn spring-boot:run`.
@@ -79,3 +79,22 @@ the same source sections does not create duplicate vector records.
 
 Request and response contracts are maintained in the DTO records. User-facing
 messages are Spanish; identifiers, comments and commit messages are English.
+## Deployment preflight
+
+Copy .env.production.example to .env.production, set distinct strong secrets,
+then verify configuration before startup:
+
+    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production
+
+After the backend stack is running, check API health, PostgreSQL/pgvector and
+both Ollama models:
+
+    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production -VerifyRunningStack
+
+After reviewing and importing current official sources, require all seven
+municipalities to have indexed source sections:
+
+    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production -VerifyRunningStack -RequireSevenCityCoverage
+
+The coverage check verifies indexed source counts. It does not certify legal
+currency, amendment completeness or parcel-level applicability.
