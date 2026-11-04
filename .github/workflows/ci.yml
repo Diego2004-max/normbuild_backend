@@ -23,3 +23,10 @@ jobs:
           cache: maven
       - name: Run tests
         run: mvn --batch-mode --no-transfer-progress verify
+      - name: Validate production compose configuration
+        env:
+          DATABASE_PASSWORD: ci-only-database-secret
+          NORMBUILD_INGESTION_API_KEY: ci-only-ingestion-secret
+        run: docker compose -f docker-compose.production.yml config --quiet
+      - name: Build backend container
+        run: docker build --tag normbuild-backend:ci .
