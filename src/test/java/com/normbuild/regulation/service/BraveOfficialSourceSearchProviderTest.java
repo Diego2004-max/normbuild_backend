@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 class BraveOfficialSourceSearchProviderTest {
 
@@ -42,5 +44,21 @@ class BraveOfficialSourceSearchProviderTest {
         assertThat(provider.officialHost("http://planning.example.gov.co/pot")).isEmpty();
         assertThat(provider.officialHost("https://notgov.co/pot")).isEmpty();
         assertThat(provider.officialHost("javascript:alert(1)")).isEmpty();
+    }
+
+    @Test
+    void givesAnActionableMessageWhenBraveRejectsTheSearchKey() {
+        var error = WebClientResponseException.create(403, "Forbidden", HttpHeaders.EMPTY, new byte[0], null);
+
+        assertThat(provider.mapProviderError(error).getReason())
+                .contains("Brave rechazó la clave", "plan Search API");
+    }
+
+    @Test
+    void explainsWhenBraveRejectsSearchParameters() {
+        var error = WebClientResponseException.create(422, "Unprocessable Entity", HttpHeaders.EMPTY, new byte[0], null);
+
+        assertThat(provider.mapProviderError(error).getReason())
+                .contains("Brave rechazó los parámetros");
     }
 }

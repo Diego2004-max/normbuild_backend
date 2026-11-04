@@ -10,6 +10,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -22,6 +24,7 @@ public class BraveOfficialSourceSearchProvider implements OfficialSourceSearchPr
 
     private static final String SEARCH_ENDPOINT = "https://api.search.brave.com/res/v1/web/search";
     private static final int RESULT_LIMIT = 8;
+    private static final Logger LOGGER = LoggerFactory.getLogger(BraveOfficialSourceSearchProvider.class);
     private static final Pattern REGULATORY_EVIDENCE = Pattern.compile(
             "(?iu)\\b(?:pot|ordenamiento\\s+territorial|normativa\\s+urban[ií]stica|"
                     + "acuerdo\\s+municipal|decreto\\s+distrital|plan\\s+de\\s+ordenamiento|planeaci[oó]n)\\b");
@@ -48,7 +51,6 @@ public class BraveOfficialSourceSearchProvider implements OfficialSourceSearchPr
                 .uri(uriBuilder -> uriBuilder.queryParam("q", query)
                         .queryParam("country", "CO")
                         .queryParam("search_lang", "es")
-                        .queryParam("ui_lang", "es-CO")
                         .queryParam("count", RESULT_LIMIT)
                         .build())
                 .header("Accept", "application/json")
@@ -106,12 +108,16 @@ public class BraveOfficialSourceSearchProvider implements OfficialSourceSearchPr
         return REGULATORY_EVIDENCE.matcher(evidence).find();
     }
 
-    private ResponseStatusException mapProviderError(WebClientResponseException exception) {
-        HttpStatus status = exception.getStatusCode().value() == 429
-                ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.BAD_GATEWAY;
-        String message = exception.getStatusCode().value() == 429
-                ? "La búsqueda oficial alcanzó su límite temporal. Espera un momento e inténtalo de nuevo."
-                : "El proveedor de búsqueda rechazó la consulta. Verifica la configuración del servicio.";
+    ResponseStatusException mapProviderError(WebClientResponseException exception) {
+        int providerStatus = exception.getStatusCode().value();
+        LOGGER.warn("Brave Search API returned HTTP {} for official-source discovery", providerStatus);
+        HttpStatus status = providerStatus == 429 ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.BAD_GATEWAY;
+        String message = switch (providerStatus) {
+            case 401, 403 -> "Brave rechazó la clave de búsqueda. Verifica que copiaste una clave activa del plan Search API.";
+            case 422 -> "Brave rechazó los parámetros de búsqueda. Revisa la configuración del servicio.";
+            case 429 -> "La búsqueda oficial alcanzó su límite temporal. Espera un momento e inténtalo de nuevo.";
+            default -> "El proveedor de búsqueda respondió con un error HTTP " + providerStatus + ". Intenta de nuevo más tarde.";
+        };
         return new ResponseStatusException(status, message, exception);
     }
 }
