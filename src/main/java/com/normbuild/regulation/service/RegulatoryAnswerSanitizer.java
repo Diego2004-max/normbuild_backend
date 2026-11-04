@@ -72,10 +72,12 @@ public class RegulatoryAnswerSanitizer {
         for (int index = 0; index < citations.size(); index++) {
             String reference = citations.get(index).articleReference();
             int citationNumber = index + 1;
-            if (reference != null && reference.matches("(?iu).*\\b250\\b.*")) {
+            if (reference != null && reference.matches("(?iu).*\\b250\\b.*")
+                    && citations.get(index).regulationCode().contains("004 de 2015")) {
                 checks.add("1. Confirmar en la ficha del predio el tipo de edificabilidad y el código morfológico de altura; el artículo 250 distingue tipología y pisos [" + citationNumber + "].");
             }
-            if (reference != null && reference.matches("(?iu).*\\b267\\b.*")) {
+            if (reference != null && reference.matches("(?iu).*\\b267\\b.*")
+                    && citations.get(index).regulationCode().contains("004 de 2015")) {
                 checks.add("2. Si la edificación es aislada, verificar los retiros y aislamientos exigidos para las dimensiones del lote [" + citationNumber + "].");
             }
             if (reference != null && reference.matches("(?iu).*\\b280\\b.*")

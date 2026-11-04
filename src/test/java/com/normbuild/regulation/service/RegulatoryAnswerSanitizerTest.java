@@ -68,4 +68,18 @@ class RegulatoryAnswerSanitizerTest {
         assertThat(answer).contains("50% propuesto");
         assertThat(answer).doesNotContain("sigue estos pasos");
     }
+
+    @Test
+    void doesNotApplyPastoArticleRulesToOtherMunicipalities() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(null, null, null, null, null, null, List.of());
+        List<CitedRegulationResponse> citations = List.of(
+                new CitedRegulationResponse(UUID.randomUUID(), "POT Medellin", "Acuerdo Municipal 048 de 2014",
+                        "Articulo 250", "https://www.medellin.gov.co/pot.pdf", 0.8, "Contenido del articulo."),
+                new CitedRegulationResponse(UUID.randomUUID(), "POT Medellin", "Acuerdo Municipal 048 de 2014",
+                        "Articulo 267", "https://www.medellin.gov.co/pot.pdf", 0.8, "Contenido del articulo."));
+
+        String answer = sanitizer.sanitize("Revisa la normativa.", analysis, citations, "Casa unifamiliar.");
+
+        assertThat(answer).doesNotContain("c?digo morfol?gico", "edificaci?n es aislada");
+    }
 }
