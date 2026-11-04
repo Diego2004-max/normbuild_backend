@@ -1,7 +1,7 @@
 {
-  "catalogVersion": 3,
+  "catalogVersion": 4,
   "reviewedOn": "2026-11-03",
-  "description": "Official primary documents for human legal-status review before import. The city POT files are baselines, not a complete parcel-level corpus.",
+  "description": "Official primary municipal and national documents for human legal-status review before import. City POT baselines are not a complete parcel-level corpus.",
   "documents": [
     {
       "title": "Plan de Ordenamiento Territorial de Bogotá D.C.",
@@ -9,7 +9,27 @@
       "regulationCode": "Decreto Distrital 555 de 2021",
       "sourceUrl": "https://bogota.gov.co/bog/pot-2022-2035/Decreto_555_de_2021.pdf",
       "registryUrl": "https://www.bogotajuridica.gov.co/sisjur/normas/Norma1.jsp?i=119582",
-      "reviewNotes": "Revisar Decretos 466 de 2024 y 466 de 2026, demás actos vigentes y cartografía actual antes de considerar completo el corpus."
+      "reviewNotes": "Decree 555 of 2021 adopts the POT. The city regulatory compilation is Decree 670 of 2025; Decree 254 of 2026 corrects it. Decree 466 of 2024 is compiled except for its annexes. Check applicable text, transition rules, maps and instruments for each parcel.",
+      "relatedOfficialSources": [
+        {
+          "title": "Decreto Distrital 670 de 2025 - Decreto Único Distrital de Ordenamiento Territorial",
+          "url": "https://sisjur.bogotajuridica.gov.co/sisjur/normas/Norma1.jsp?dt=S&i=191905",
+          "format": "Official legal registry HTML",
+          "reviewStatus": "Review and index the consolidated text before deployment."
+        },
+        {
+          "title": "Decreto Distrital 254 de 2026 - Corrections to Decree 670 of 2025",
+          "url": "https://www.bogotajuridica.gov.co/sisjur/normas/Norma1.jsp?i=193592",
+          "format": "Official legal registry HTML",
+          "reviewStatus": "Verify all corrections against the consolidated text."
+        },
+        {
+          "title": "Decreto Distrital 466 de 2024 - POT common urban treatment rules, Annex 5",
+          "url": "https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?dt=S&i=170937",
+          "format": "Official legal registry",
+          "reviewStatus": "The decree text was compiled into Decree 670 of 2025 except for its annexes; verify Annex 5 and subsequent corrections before indexing."
+        }
+      ]
     },
     {
       "title": "Plan de Ordenamiento Territorial de Pasto 2015-2027",
@@ -25,7 +45,7 @@
       "regulationCode": "Acuerdo Municipal 048 de 2014",
       "sourceUrl": "https://www.medellin.gov.co/es/wp-content/uploads/2022/10/POT-Medellin.pdf",
       "registryUrl": "https://www.medellin.gov.co/es/transparencia/plan-de-ordenamiento-territorial-de-medellin/reglamentacion-del-acuerdo-048-de-2014/",
-      "reviewNotes": "Revisar actos reglamentarios y precisiones cartográficas posteriores; no basta el acuerdo base para una consulta predial."
+      "reviewNotes": "El Acuerdo 048 de 2014 es el POT vigente según la Alcaldía consultada. Revisar actos reglamentarios y precisiones cartográficas; la revisión publicada en 2026 es una propuesta mientras no se adopte."
     },
     {
       "title": "Plan de Ordenamiento Territorial de Santiago de Cali",
@@ -33,7 +53,7 @@
       "regulationCode": "Acuerdo Municipal 0373 de 2014",
       "sourceUrl": "https://planeacion.cali.gov.co/pot_adoptado/20141201%20ACUERDO%200373%20DE%202014.pdf",
       "registryUrl": "https://www.cali.gov.co/planeacion/publicaciones/52108/documento-plan-de-ordenamiento-territorial/",
-      "reviewNotes": "El archivo oficial está listado como el Acuerdo 0373; el host de descarga devolvió HTTP 403 en la última verificación desde este entorno. El repositorio ofrece anexos complementarios, pero no son sustitutos del articulado completo. Verificar la extensión judicial de vigencia reportada hasta 2027-07-09, actos posteriores y mapas oficiales."
+      "reviewNotes": "El portal municipal publica el Acuerdo 0373, pero la URL directa devolvió HTTP 403 desde este entorno. Los anexos descargados no sustituyen el articulado completo. Verificar vigencia, decisiones judiciales, actos posteriores y mapas antes de importarlo."
     },
     {
       "title": "Normas volumétricas complementarias del POT de Santiago de Cali",
@@ -41,7 +61,7 @@
       "regulationCode": "Acuerdo 0373 de 2014 - Normas volumétricas",
       "sourceUrl": "https://idesc.cali.gov.co/download/pot_2014/normas_volumetricas.pdf",
       "registryUrl": "https://web1.cali.gov.co/publicaciones.php?dPrint=1&id=52108",
-      "reviewNotes": "Anexo temático del repositorio oficial, no reemplaza el Acuerdo completo ni la cartografía. Confirmar alcance y vigencia antes de citarlo como regla aplicable a un predio."
+      "reviewNotes": "Anexo temático del repositorio oficial; no reemplaza el Acuerdo completo ni la cartografía. Confirmar alcance y vigencia antes de citarlo para un predio."
     },
     {
       "title": "Aclaraciones y normas complementarias del POT de Santiago de Cali",
@@ -57,7 +77,7 @@
       "regulationCode": "Acuerdo 0373 de 2014 - Equipamientos",
       "sourceUrl": "https://idesc.cali.gov.co/download/pot_2014/norma_equipamientos.pdf",
       "registryUrl": "https://web1.cali.gov.co/publicaciones.php?dPrint=1&id=52108",
-      "reviewNotes": "Documento temático de equipamientos; no usarlo para determinar por sí solo edificabilidad residencial, uso o condiciones de un predio."
+      "reviewNotes": "Documento temático de equipamientos; no usarlo por sí solo para determinar edificabilidad residencial, uso o condiciones de un predio."
     },
     {
       "title": "Plan de Ordenamiento Territorial de Bucaramanga 2014-2027",
@@ -73,7 +93,15 @@
       "regulationCode": "Decreto Distrital 0212 de 2014",
       "sourceUrl": "https://barranquilla.gov.co/documento/decreto-0212-de-2014-adopta-pot/?version=1.1",
       "registryUrl": "https://barranquilla.gov.co/plan-de-ordenamiento-territorial",
-      "reviewNotes": "Revisar modificaciones, mapas de amenazas y actos cartográficos posteriores antes de usar para una ubicación particular."
+      "reviewNotes": "POT base confirmado en el repositorio oficial. Contrastar con el Decreto 0893 de 2024, que adoptó un estudio de amenazas y actualizó los mapas U-10, U-11 y U-12; verificar cartografía vigente del predio.",
+      "relatedOfficialSources": [
+        {
+          "title": "Decreto Distrital 0893 de 2024 - Updated risk study and maps U-10, U-11 and U-12",
+          "url": "https://barranquilla.gov.co/plan-de-ordenamiento-territorial",
+          "format": "Official POT registry with Gazette and map attachments",
+          "reviewStatus": "Download and review the decree and geospatial annexes before indexing."
+        }
+      ]
     },
     {
       "title": "Plan de Ordenamiento Territorial de Cartagena de Indias - Tomo I",
@@ -81,7 +109,15 @@
       "regulationCode": "Decreto Distrital 0977 de 2001 - Tomo I",
       "sourceUrl": "https://seguimientopot.cartagena.gov.co/sites/default/files/2024-12/Decreto_0977_2001_POT_Tomo_I%20%281%29.PDF",
       "registryUrl": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
-      "reviewNotes": "El registro oficial publica el POT por tomos. Este volumen contiene el Decreto 0977 de 2001; no representa cartografía parcelaria ni modificaciones posteriores."
+      "reviewNotes": "El POT se publica por tomos y no contiene por sí solo la cartografía predial ni todas las modificaciones posteriores. La Alcaldía registra una medida cautelar provisional sobre la expresión \"y obligatorias\" del artículo 291 y los artículos 304 a 306; verificar el estado judicial actual antes de citar esas disposiciones.",
+      "relatedOfficialSources": [
+        {
+          "title": "Judicial decision 13-001-33-31-004-2023-00203-00",
+          "url": "https://seguimientopot.cartagena.gov.co/sites/default/files/documentos/normativa/2024-12/SENTENCIA%2013%20001%2033%2031%20004%202023%2000203%2000%20%20DE%202023.pdf",
+          "format": "Official court decision published by Cartagena POT office",
+          "reviewStatus": "Provisional suspension reported; verify later procedural orders before indexing affected provisions."
+        }
+      ]
     },
     {
       "title": "Plan de Ordenamiento Territorial de Cartagena de Indias - Tomo II",
@@ -89,15 +125,23 @@
       "regulationCode": "Decreto Distrital 0977 de 2001 - Tomo II",
       "sourceUrl": "https://seguimientopot.cartagena.gov.co/sites/default/files/2024-12/Decreto_0977_2001_POT_Tomo_II.PDF",
       "registryUrl": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
-      "reviewNotes": "Segundo archivo publicado en el registro oficial. Verificar su contenido y revisar actos, cartografía y determinantes actuales antes de aplicarlo a un predio."
+      "reviewNotes": "El POT se publica por tomos y no contiene por sí solo la cartografía predial ni todas las modificaciones posteriores. La Alcaldía registra una medida cautelar provisional sobre la expresión \"y obligatorias\" del artículo 291 y los artículos 304 a 306; verificar el estado judicial actual antes de citar esas disposiciones.",
+      "relatedOfficialSources": [
+        {
+          "title": "Judicial decision 13-001-33-31-004-2023-00203-00",
+          "url": "https://seguimientopot.cartagena.gov.co/sites/default/files/documentos/normativa/2024-12/SENTENCIA%2013%20001%2033%2031%20004%202023%2000203%2000%20%20DE%202023.pdf",
+          "format": "Official court decision published by Cartagena POT office",
+          "reviewStatus": "Provisional suspension reported; verify later procedural orders before indexing affected provisions."
+        }
+      ]
     },
     {
-      "title": "Decreto Único Reglamentario del Sector Vivienda, compilado hasta el 16 de febrero de 2026",
+      "title": "Decreto Único Reglamentario del Sector Vivienda, compilado al 16 de febrero de 2026",
       "jurisdiction": "Colombia",
       "regulationCode": "Decreto 1077 de 2015, compilado al 2026-02-16",
       "sourceUrl": "https://minvivienda.gov.co/sites/default/files/normativa/decreto-unico-vivienda-actualizado-ultima-actualizacion-16022026_0_1.pdf",
       "registryUrl": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=77216",
-      "reviewNotes": "Revisar modificaciones posteriores al 16 de febrero de 2026. El Decreto 381 de 2026 modifica el Decreto 1077 y debe importarse por separado."
+      "reviewNotes": "Esta copia oficial refleja el estado compilado al 16 de febrero de 2026 y no es la versión actual consolidada. Debe contrastarse con el Decreto 381 de 2026 y posteriores actos modificatorios."
     },
     {
       "title": "Procedimiento para la expedición de determinantes de ordenamiento territorial",
@@ -105,7 +149,7 @@
       "regulationCode": "Decreto 381 de 2026",
       "sourceUrl": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma_pdf.php?i=275556",
       "registryUrl": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=275556",
-      "reviewNotes": "Verificar publicación, vigencia, régimen de transición y aplicación al instrumento territorial consultado."
+      "reviewNotes": "Decreto nacional 381 de 2026 modifica el Decreto 1077 de 2015 sobre coordinación, expedición y gestión de información de determinantes territoriales. Su artículo 2 prevé una transición de seis meses; comprobar la fecha de publicación y aplicación temporal antes de usarlo."
     },
     {
       "title": "Decreto de adopción del Reglamento Colombiano de Construcción Sismo Resistente NSR-10",
@@ -113,7 +157,7 @@
       "regulationCode": "Decreto 0926 de 2010",
       "sourceUrl": "https://www.minvivienda.gov.co/sites/default/files/normativa/0926%20%20-%202010.pdf",
       "registryUrl": "https://www.minvivienda.gov.co/normativa?search_api_fulltext=nsr+10",
-      "reviewNotes": "El PDF descargado es el acto de adopción y no contiene el cuerpo técnico completo de la NSR-10. No debe citarse como fuente de cálculos estructurales; se requiere acceso autorizado al anexo técnico y a todos sus actos modificatorios."
+      "reviewNotes": "El PDF contiene el acto de adopción, no el cuerpo técnico completo de la NSR-10. No usar como fuente para cálculos estructurales; se requiere el texto técnico íntegro y todos sus actos modificatorios."
     },
     {
       "title": "Modificación parcial de la NSR-10",
@@ -121,7 +165,7 @@
       "regulationCode": "Decreto 1401 de 2023",
       "sourceUrl": "https://minvivienda.gov.co/sites/default/files/normativa/1401-2023.pdf",
       "registryUrl": "https://www.minvivienda.gov.co/normativa/decreto-1401-2023",
-      "reviewNotes": "Importar junto con su corrección del Decreto 1580 de 2023 y verificar modificaciones posteriores."
+      "reviewNotes": "Importar junto con su corrección mediante el Decreto 1580 de 2023 y verificar modificaciones posteriores."
     },
     {
       "title": "Corrección del Decreto 1401 de 2023 sobre NSR-10",
@@ -137,7 +181,7 @@
       "regulationCode": "Decreto 1166 de 2025",
       "sourceUrl": "https://www.minvivienda.gov.co/sites/default/files/normativa/decreto-1166-de-2025.pdf",
       "registryUrl": "https://www.minvivienda.gov.co/normativa?search_api_fulltext=nsr+10",
-      "reviewNotes": "Verificar su ámbito específico: intervenciones de mejoramiento de vivienda, vivienda progresiva o construcción en sitio propio objeto de subsidio. No generalizar su aplicación a toda obra."
+      "reviewNotes": "Verificar su ámbito específico: mejoramiento de vivienda, vivienda progresiva o construcción en sitio propio objeto de subsidio. No generalizar su aplicación a toda obra."
     }
   ]
 }
