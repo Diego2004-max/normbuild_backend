@@ -31,9 +31,13 @@ foreach ($document in $catalog.documents) {
 
     $safeName = ($document.jurisdiction + '-' + $document.regulationCode) -replace '[^A-Za-z0-9-]', '-'
     $pdfPath = Join-Path $resolvedOutput ($safeName + '.pdf')
+    $partialPath = $pdfPath + '.download'
     $response = $null
     try {
         Write-Output "Downloading $($document.title) from its official source..."
+        if (Test-Path -LiteralPath $partialPath) {
+            Remove-Item -LiteralPath $partialPath -Force
+        }
         $request = [Net.HttpWebRequest]::Create($document.sourceUrl)
         $request.Method = 'GET'
         $request.UserAgent = 'NormBuild-Official-Document-Importer/1.0'
@@ -49,7 +53,7 @@ foreach ($document in $catalog.documents) {
             throw 'The document exceeds the API 40 MB upload limit.'
         }
         $sourceStream = $response.GetResponseStream()
-        $fileStream = [IO.File]::Create($pdfPath)
+        $fileStream = [IO.File]::Create($partialPath)
         try {
             $sourceStream.CopyTo($fileStream)
         }
@@ -58,10 +62,10 @@ foreach ($document in $catalog.documents) {
             $sourceStream.Dispose()
             $response.Dispose()
         }
-        if ((Get-Item -LiteralPath $pdfPath).Length -gt 40MB) {
+        if ((Get-Item -LiteralPath $partialPath).Length -gt 40MB) {
             throw 'The document exceeds the API 40 MB upload limit.'
         }
-        $stream = [IO.File]::OpenRead($pdfPath)
+        $stream = [IO.File]::OpenRead($partialPath)
         try {
             $signature = [byte[]]::new(5)
             $read = $stream.Read($signature, 0, $signature.Length)
@@ -72,15 +76,30 @@ foreach ($document in $catalog.documents) {
         if ($read -ne 5 -or [Text.Encoding]::ASCII.GetString($signature) -ne '%PDF-') {
             throw "The official URL did not return a valid PDF: $($document.sourceUrl)"
         }
+        Move-Item -LiteralPath $partialPath -Destination $pdfPath -Force
     }
     catch {
+        $failureMessage = $_.Exception.Message
         if ($response) {
             $response.Dispose()
         }
-        if (Test-Path -LiteralPath $pdfPath) {
-            Remove-Item -LiteralPath $pdfPath -Force
+        if (Test-Path -LiteralPath $partialPath) {
+            Remove-Item -LiteralPath $partialPath -Force
         }
-        Write-Warning "Could not download $($document.jurisdiction) source; continuing with the next catalog entry. $($_.Exception.Message)"
+        $failureAuditPath = Join-Path $resolvedOutput 'download-failures.csv'
+        $failureRecord = [PSCustomObject]@{
+            AttemptedAtUtc = [DateTime]::UtcNow.ToString('o')
+            Jurisdiction = $document.jurisdiction
+            RegulationCode = $document.regulationCode
+            SourceUrl = $document.sourceUrl
+            Error = $failureMessage
+        }
+        if (Test-Path -LiteralPath $failureAuditPath) {
+            $failureRecord | Export-Csv -LiteralPath $failureAuditPath -NoTypeInformation -Append -Encoding UTF8
+        } else {
+            $failureRecord | Export-Csv -LiteralPath $failureAuditPath -NoTypeInformation -Encoding UTF8
+        }
+        Write-Warning "Could not download $($document.jurisdiction) source; failure recorded and the next catalog entry will be tried. $failureMessage"
         continue
     }
 
