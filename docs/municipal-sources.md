@@ -55,3 +55,34 @@ The catalog in `municipal-document-catalog.json` identifies official base POT
 PDFs that can be downloaded for review. A base POT is not sufficient by itself
 to determine an individual parcel's permissible construction. Current
 amendments, parcel-specific zoning and cartography must also be checked.
+## Newly verified legal-status and mapping sources
+
+The official Cartagena POT register reports that proceeding
+[13-001-33-31-004-2023-00203-00](https://seguimientopot.cartagena.gov.co/normativa/sentencia-13-001-33-31-004-2023-00203-00-2023-216)
+provisionally suspended the phrase “y obligatorias” in Article 291 and Articles
+304, 305 and 306 of Decree 0977 of 2001. This is a material legal-status
+qualification for any retrieval from the 2001 POT. Obtain the primary ruling,
+confirm its operative scope and current status, and encode the qualification
+before those provisions can support an answer. Do not infer that the rest of
+the POT was suspended.
+
+The District of Barranquilla's
+[current POT register](https://barranquilla.gov.co/plan-de-ordenamiento-territorial)
+identifies Decree 0893 of 2024 (18 October 2024) as adopting a risk study and
+updating POT maps U-10 (mass movement), U-11 (flooding) and U-12 (general
+risks). The decree and updated official map layers are necessary for risk
+screening; the 2014 POT PDF alone cannot establish parcel-level risk.
+
+Cartagena's
+[official parcel information system (MIDAS)](https://seguimientopot.cartagena.gov.co/geodata-midas)
+publishes parcel-level and territorial layers, including land use, risk and
+licenses. A text-only POT corpus cannot derive those parcel-specific facts.
+Require the relevant location and consult the official spatial layer before
+claiming a parcel passes a zoning or risk check.
+
+The current machine can reach some Cali thematic annexes, but direct PDF
+requests for the full Cali Agreement, Barranquilla Decree 0212, and both
+Cartagena Decree 0977 volumes returned HTTP 403. Their catalog entries remain
+discovery records only; the importer has not indexed these files. Retrieve the
+PDFs through the official portals from a deployment host that can access them,
+then verify checksums, text extraction, legal status and coverage before use.
