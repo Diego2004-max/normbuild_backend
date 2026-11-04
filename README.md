@@ -12,10 +12,14 @@ Spring Boot API for project analysis and source-grounded regulatory guidance.
 ## Local setup
 
 1. Copy `.env.example` to `.env` and set private database and ingestion secrets.
-2. Start PostgreSQL with `docker compose up -d database`.
+2. Start the isolated PostgreSQL/pgvector container with `docker compose up -d database`. It binds to `127.0.0.1:5433`, so it does not collide with a PostgreSQL service already using port 5432.
 3. Pull the local models with `ollama pull llama3.1` and `ollama pull nomic-embed-text`.
-4. Start the API with `mvn spring-boot:run`.
-5. Open `http://localhost:8080/actuator/health` to inspect service health.
+4. Run `scripts/start-local-ai.ps1`. It starts a separate CPU AVX2 Ollama endpoint on port 11435, avoiding CUDA runner failures while leaving the regular Ollama server on port 11434 untouched.
+5. Start the API with `mvn spring-boot:run`.
+6. Open `http://localhost:8080/actuator/health` to inspect service health.
+
+The CPU inference check is available with `scripts/verify-local-ai.ps1` and the
+temporary Ollama endpoint can be stopped with `scripts/stop-local-ai.ps1`.
 
 ## Single-host production deployment
 
