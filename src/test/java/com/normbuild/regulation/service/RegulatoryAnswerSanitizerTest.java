@@ -102,4 +102,27 @@ class RegulatoryAnswerSanitizerTest {
         assertThat(answer).contains("no debe superar", "excepciones", "[2]");
         assertThat(answer).doesNotContain("no se pueden calcular", "determinar si se aplica el articulo 310 o 313");
     }
+
+    @Test
+    void removesNullModelClaimsAndExplainsOfficialBuildingLicenseApplication() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(null, null, null, null, null, null, List.of());
+        List<CitedRegulationResponse> citations = List.of(
+                new CitedRegulationResponse(UUID.randomUUID(), "Decreto Único Reglamentario de Vivienda", "Decreto 1077 de 2015",
+                        "Artículo 2.2.6.1.2.1.1 (parte 1 de 2)", "https://www.minvivienda.gov.co/decreto.pdf", 0.9,
+                        "Solicitud de licencia y revisión de documentos."),
+                new CitedRegulationResponse(UUID.randomUUID(), "Decreto Único Reglamentario de Vivienda", "Decreto 1077 de 2015",
+                        "Artículo 2.2.6.1.2.1.7", "https://www.minvivienda.gov.co/decreto.pdf", 0.88,
+                        "Documentos: identificación del predio, solicitante y profesionales."));
+
+        String answer = sanitizer.sanitize(
+                "La ocupación es null y el índice de construcción null.\nLa información proporcionada no es suficiente para determinar las ratios.\nRatios propuestos:\n- Área de lote: 180 m2\nVerificación de índices urbanísticos:\nLa licencia se solicita ante la autoridad competente.",
+                analysis, citations, "Casa unifamiliar en Bucaramanga.");
+
+        assertThat(answer).doesNotContain("null");
+        assertThat(answer).contains("documentos exigidos por el Decreto 1077", "formato oficial", "[1]");
+        assertThat(answer).contains("identificar el predio", "solicitante", "[2]");
+        assertThat(answer).doesNotContain("rendimiento de ocupación", "null");
+        assertThat(answer).doesNotContain("Ratios propuestos", "Área de lote:", "Verificación de índices urbanísticos", "información proporcionada no es suficiente");
+        assertThat(answer).contains("huella construida del primer piso", "total de m² construidos");
+    }
 }

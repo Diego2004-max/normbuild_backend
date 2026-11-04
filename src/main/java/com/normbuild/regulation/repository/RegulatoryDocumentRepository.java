@@ -21,7 +21,15 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             FROM regulatory_documents
             WHERE jurisdiction IN (:jurisdiction, 'Colombia')
               AND source_url IS NOT NULL
-              AND (NOT :prioritizeLicensing OR content ~* 'licencias?|licenciamiento')
+              AND (NOT :prioritizeLicensing OR (
+                    article_reference ~* '2[.]2[.]6[.]1[.]2[.]1[.](1|7)'
+                    AND content ~* 'licencias?|licenciamiento|solicitud|documentos'
+                    AND ((article_reference ~* '2[.]2[.]6[.]1[.]2[.]1[.]1'
+                          AND content ~* 'radicada en legal y debida forma|totalidad.{0,40}documentos.{0,30}exigidos|Formato de Revisi.n e Informaci.n de Proyectos')
+                         OR (article_reference ~* '2[.]2[.]6[.]1[.]2[.]1[.]7'
+                             AND content ~* 'identificaci.n del predio.{0,100}solicitante'))
+                    AND content !~* 'derogado|entrega material de espacio'
+              ))
               AND (:includeSpecializedHousing OR content !~* '\\mVIP\\M')
               AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
               AND 1 - (embedding <=> CAST(:embedding AS vector)) >= :threshold
@@ -29,6 +37,8 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
                      + CASE WHEN :prioritizeBuildingRules AND :jurisdiction = 'Pasto'
                                  AND content ~* 'art[ií]culo\\s+250'
                             THEN -0.40 ELSE 0 END
+                     + CASE WHEN :prioritizeLicensing AND article_reference ~* '2[.]2[.]6[.]1[.]2[.]1[.]1' THEN -0.60 ELSE 0 END
+                     + CASE WHEN :prioritizeLicensing AND article_reference ~* '2[.]2[.]6[.]1[.]2[.]1[.]7' THEN -0.30 ELSE 0 END
                      + CASE WHEN :prioritizeLicensing AND regulation_code ~* '1077' THEN -0.35 ELSE 0 END
                      + CASE WHEN :prioritizeBuildingRules AND content ~* 'edificabilidad.{0,40}equipamientos'
                             THEN 0.25 ELSE 0 END

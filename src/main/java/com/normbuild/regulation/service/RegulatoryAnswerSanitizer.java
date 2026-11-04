@@ -22,6 +22,11 @@ public class RegulatoryAnswerSanitizer {
             "(?iu).*determinar si se aplica el art.culo\\s+\\d+\\s+o\\s+\\d+.*");
     private static final Pattern MODEL_TRUNCATION_NOTICE = Pattern.compile(
             "(?iu).*respuesta est. resumida por la capacidad del modelo local.*");
+    private static final Pattern NULL_VALUE = Pattern.compile("(?iu).*\\bnull\\b.*");
+    private static final Pattern MODEL_UNSUPPORTED_INDEX_INSTRUCTION = Pattern.compile(
+            "(?iu).*(?:debe|debes) proporcionarse? el [aÃ¡]rea construida.*(?:rendimiento|[iÃ­]ndices).*");
+    private static final Pattern MODEL_REDUNDANT_ANALYSIS = Pattern.compile(
+            "(?iu).*(?:ratios propuestos|de lote:|verificaci.{1,3}n de .{1,3}ndices urban.sticos|informaci.{1,3}n proporcionada no es suficiente para determinar).*");
     private static final Pattern UNSUPPORTED_NUMERIC_LIMIT = Pattern.compile(
             "(?iu)(?:m[aá]xim[oa]|permitid[oa])[^.!?\\n]*\\d|\\d[^.!?\\n]*(?:m[aá]xim[oa]|permitid[oa])");
 
@@ -34,6 +39,9 @@ public class RegulatoryAnswerSanitizer {
                     && !UNSUPPORTED_MISSING_PROJECT_INDICES.matcher(line).find()
                     && !MODEL_ARTICLE_SELECTION_CLAIM.matcher(line).find()
                     && !MODEL_TRUNCATION_NOTICE.matcher(line).find()
+                    && !NULL_VALUE.matcher(line).find()
+                    && !MODEL_UNSUPPORTED_INDEX_INSTRUCTION.matcher(line).matches()
+                    && !MODEL_REDUNDANT_ANALYSIS.matcher(line).matches()
                     && !unsupportedClassification && !line.isBlank()) {
                 String plainText = line.strip().replace("**", "");
                 if (plainText.startsWith("* ")) {
@@ -47,6 +55,10 @@ public class RegulatoryAnswerSanitizer {
         String proposedRatios = formatProposedRatios(analysis);
         if (!proposedRatios.isBlank()) {
             sections.add(proposedRatios);
+        }
+        String missingAreas = formatMissingAreaGuidance(analysis);
+        if (!missingAreas.isBlank()) {
+            sections.add(missingAreas);
         }
         String safeChecklist = String.join("\n", safeLines)
                 .replaceAll("(?im)^.*(?:pasos:|Verificaci.n de .ndices)\\s*(?:\\R\\s*\\R|$)", "");
@@ -78,6 +90,16 @@ public class RegulatoryAnswerSanitizer {
         for (int index = 0; index < citations.size(); index++) {
             String reference = citations.get(index).articleReference();
             int citationNumber = index + 1;
+            if (reference != null && reference.matches("(?iu).*2[.]2[.]6[.]1[.]2[.]1[.]1.*")
+                    && citations.get(index).regulationCode().contains("1077")) {
+                checks.add("Para solicitar la licencia de construcci\u00f3n, radica la solicitud con los documentos exigidos por el Decreto 1077; la autoridad verifica la informaci\u00f3n b\u00e1sica mediante el formato oficial de revisi\u00f3n del proyecto. Confirma con la curadur\u00eda urbana o Planeaci\u00f3n el listado vigente para este predio ["
+                        + citationNumber + "].");
+            }
+            if (reference != null && reference.matches("(?iu).*2[.]2[.]6[.]1[.]2[.]1[.]7.*")
+                    && citations.get(index).regulationCode().contains("1077")) {
+                checks.add("El art\u00edculo 2.2.6.1.2.1.7 remite a los documentos definidos por la resoluci\u00f3n vigente: deben identificar el predio, al solicitante y a los profesionales, y permitir verificar la viabilidad del proyecto. Los anexos concretos dependen de la modalidad y caracter\u00edsticas de la obra; confirma el formulario y la lista vigentes con la curadur\u00eda ["
+                        + citationNumber + "].");
+            }
             if (reference != null && reference.matches("(?iu).*\\b250\\b.*")
                     && citations.get(index).regulationCode().contains("004 de 2015")) {
                 checks.add("1. Confirmar en la ficha del predio el tipo de edificabilidad y el código morfológico de altura; el artículo 250 distingue tipología y pisos [" + citationNumber + "].");
@@ -139,6 +161,17 @@ public class RegulatoryAnswerSanitizer {
             return "";
         }
         return "Cálculos de la propuesta; no son límites normativos: " + String.join("; ", ratios) + ".";
+    }
+
+    private String formatMissingAreaGuidance(ProjectAnalysisResponse analysis) {
+        List<String> missing = new ArrayList<>();
+        if (analysis.occupiedAreaSquareMeters() == null) {
+            missing.add("Indica cu\u00e1ntos m\u00b2 ocupar\u00e1 la huella construida del primer piso para calcular ocupaci\u00f3n.");
+        }
+        if (analysis.totalBuiltAreaSquareMeters() == null) {
+            missing.add("Indica el total de m\u00b2 construidos sumando los pisos para calcular construcci\u00f3n.");
+        }
+        return missing.isEmpty() ? "" : "Para calcular los \u00edndices de tu propuesta:\n" + String.join("\n", missing);
     }
 
     private String formatArea(Double value) {
