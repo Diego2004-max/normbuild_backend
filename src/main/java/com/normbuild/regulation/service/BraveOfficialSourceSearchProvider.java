@@ -46,13 +46,9 @@ public class BraveOfficialSourceSearchProvider implements OfficialSourceSearchPr
         }
 
         String query = "site:gov.co " + municipality.strip()
-                + " (POT OR \"plan de ordenamiento territorial\" OR normas urbanísticas)";
+                + " Colombia POT plan de ordenamiento territorial normativa urbana";
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder.queryParam("q", query)
-                        .queryParam("country", "CO")
-                        .queryParam("search_lang", "es")
-                        .queryParam("count", RESULT_LIMIT)
-                        .build())
+                .uri(uriBuilder -> uriBuilder.queryParam("q", query).build())
                 .header("Accept", "application/json")
                 .header("X-Subscription-Token", apiKey)
                 .retrieve()

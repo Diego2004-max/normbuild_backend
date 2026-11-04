@@ -3,11 +3,16 @@ package com.normbuild.regulation.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 class BraveOfficialSourceSearchProviderTest {
 
@@ -60,5 +65,24 @@ class BraveOfficialSourceSearchProviderTest {
 
         assertThat(provider.mapProviderError(error).getReason())
                 .contains("Brave rechazó los parámetros");
+    }
+
+    @Test
+    void sendsSimpleCountryAndLanguageFilteredQueryToBrave() {
+        AtomicReference<java.net.URI> requestUri = new AtomicReference<>();
+        WebClient.Builder client = WebClient.builder().exchangeFunction(request -> {
+            requestUri.set(request.url());
+            return Mono.just(ClientResponse.create(org.springframework.http.HttpStatus.OK)
+                    .header("Content-Type", "application/json")
+                    .body("{\"web\":{\"results\":[]}}")
+                    .build());
+        });
+        var searchProvider = new BraveOfficialSourceSearchProvider(client, "test-key");
+
+        searchProvider.search("Manizales").join();
+
+        String query = URLDecoder.decode(requestUri.get().getRawQuery(), StandardCharsets.UTF_8);
+        assertThat(query).isEqualTo("q=site:gov.co Manizales Colombia POT plan de ordenamiento territorial normativa urbana")
+                .doesNotContain("country=", "search_lang=", "ui_lang", " OR ", "(");
     }
 }
