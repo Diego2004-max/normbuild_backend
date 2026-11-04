@@ -16,8 +16,8 @@ public class RegulatoryDocumentJdbcRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void insertDocument(UUID id, DocumentIngestionRequest request, String embeddingLiteral) {
-        jdbcTemplate.update(connection -> {
+    public int insertDocument(UUID id, DocumentIngestionRequest request, String embeddingLiteral) {
+        return jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO regulatory_documents (
                         id, title, jurisdiction, regulation_code, article_reference, source_url, content, embedding, created_at

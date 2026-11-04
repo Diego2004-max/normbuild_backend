@@ -19,6 +19,7 @@ import com.normbuild.regulation.repository.RegulatoryDocumentRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -139,7 +140,9 @@ public class RegulatoryRagService {
         CompletableFuture<String> summaryFuture = parsingService.buildSearchSummaryAsync(request.content());
         return normalizedFuture.thenCombineAsync(summaryFuture, (normalized, summary) -> {
             List<Double> embedding = embeddingClient.createEmbedding(summary + "\n" + normalized);
-            UUID documentId = UUID.randomUUID();
+            UUID documentId = UUID.nameUUIDFromBytes((request.jurisdiction().strip().toLowerCase(java.util.Locale.ROOT)
+                    + "|" + request.sourceUrl() + "|" + request.articleReference().strip() + "|" + normalized)
+                    .getBytes(StandardCharsets.UTF_8));
             DocumentIngestionRequest normalizedRequest = new DocumentIngestionRequest(
                     request.title(),
                     request.jurisdiction(),
@@ -148,10 +151,12 @@ public class RegulatoryRagService {
                     request.sourceUrl(),
                     normalized
             );
-            jdbcRepository.insertDocument(documentId, normalizedRequest, embeddingFormatter.toVectorLiteral(embedding));
-            knowledgeVersion.incrementAndGet();
-            responseCache.invalidateAll();
-            return new DocumentIngestionResponse(documentId, "INDEXED");
+            int inserted = jdbcRepository.insertDocument(documentId, normalizedRequest, embeddingFormatter.toVectorLiteral(embedding));
+            if (inserted > 0) {
+                knowledgeVersion.incrementAndGet();
+                responseCache.invalidateAll();
+            }
+            return new DocumentIngestionResponse(documentId, inserted > 0 ? "INDEXED" : "ALREADY_INDEXED");
         }, ragTaskExecutor);
     }
 

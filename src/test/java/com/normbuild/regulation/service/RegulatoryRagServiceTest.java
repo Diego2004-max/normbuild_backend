@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,6 +32,7 @@ class RegulatoryRagServiceTest {
     private final EmbeddingClient embeddingClient = mock(EmbeddingClient.class);
     private final LlmClient llmClient = mock(LlmClient.class);
     private final RegulatoryDocumentRepository repository = mock(RegulatoryDocumentRepository.class);
+    private final RegulatoryDocumentJdbcRepository jdbcRepository = mock(RegulatoryDocumentJdbcRepository.class);
     private final DocumentParsingService parsingService = mock(DocumentParsingService.class);
     private final ComplianceQueryRequest request = new ComplianceQueryRequest(
             "Bogotá D.C.", "Casa de dos pisos con altura total de 7.5 metros en un lote de 180 m².");
@@ -45,7 +47,7 @@ class RegulatoryRagServiceTest {
                 new EmbeddingFormatter(), new RegulatoryPromptBuilder(),
                 new DeterministicChecklistBuilder(new ProjectFactExtractor()),
                 parsingService, repository,
-                mock(RegulatoryDocumentJdbcRepository.class), Runnable::run,
+                jdbcRepository, Runnable::run,
                 new ProjectAnalysisService(new ProjectFactExtractor()));
         when(embeddingClient.createEmbedding(anyString())).thenReturn(List.of(0.2, 0.8));
         RegulatoryDocumentProjection document = source();
@@ -169,6 +171,7 @@ class RegulatoryRagServiceTest {
     @Test
     void invalidatesCompletedResponsesWhenKnowledgeIsUpdated() {
         when(llmClient.generateChecklist(anyString())).thenReturn("Revisión terminada.");
+        when(jdbcRepository.insertDocument(any(UUID.class), any(DocumentIngestionRequest.class), anyString())).thenReturn(1);
         when(parsingService.normalizeContentAsync(anyString())).thenReturn(java.util.concurrent.CompletableFuture.completedFuture("Contenido normalizado."));
         when(parsingService.buildSearchSummaryAsync(anyString())).thenReturn(java.util.concurrent.CompletableFuture.completedFuture("Resumen de búsqueda."));
         service.answerComplianceQuestion(request).join();
