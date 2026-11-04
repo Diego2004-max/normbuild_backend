@@ -12,6 +12,9 @@ Spring Boot API for project analysis and source-grounded regulatory guidance.
 ## Local setup
 
 1. Copy `.env.example` to `.env` and set private database and ingestion secrets.
+   Set `BRAVE_SEARCH_API_KEY` in this local file to enable live municipal
+   source discovery. Git and Docker exclude `.env`; commit only the blank
+   `.env.example` template, never the local values.
 2. Start the isolated PostgreSQL/pgvector container with `docker compose up -d database`. It binds to `127.0.0.1:5435`, so it avoids the local PostgreSQL services already using ports 5432 and 5433.
 3. Pull the local models with `ollama pull llama3.1` and `ollama pull nomic-embed-text`.
 4. Run `scripts/start-local-ai.ps1`. It starts a separate CPU AVX2 Ollama endpoint on port 11435, avoiding CUDA runner failures while leaving the regular Ollama server on port 11434 untouched.

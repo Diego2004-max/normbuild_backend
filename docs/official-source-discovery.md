@@ -13,6 +13,11 @@ environment. Never add this key to Vue, Vite variables, browser storage or Git.
 The search endpoint returns a clear service-unavailable error when the key is
 missing; it does not substitute sample results.
 
+For local development, add `BRAVE_SEARCH_API_KEY=...` to the ignored backend
+`.env` file and restart Spring Boot. For production, set the same variable in
+the server's protected `.env.production` file or secret manager. The checked-in
+environment examples intentionally leave this value blank.
+
 The public endpoint is `POST /api/regulations/sources/search`:
 
 ```json
