@@ -66,6 +66,7 @@ class RegulatoryAnswerSanitizerTest {
         assertThat(answer).contains("280", "pol", "[1]");
         assertThat(answer).contains("282", "patios y", "[2]");
         assertThat(answer).contains("50% propuesto");
+        assertThat(answer).doesNotContain("no estan definidos");
         assertThat(answer).doesNotContain("sigue estos pasos", "Verificacion de indices");
     }
 
