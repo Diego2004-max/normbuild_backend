@@ -70,6 +70,11 @@ no-context result.
 - `POST /api/regulations/documents/pdf`: extract and index reviewed PDF sources in bounded, overlapping chunks.
 - `GET /actuator/health`: service health.
 - `GET /api/regulations/coverage`: actual indexed official source counts by city.
+- `POST /api/regulations/sources/search`: discover live Colombian official POT candidates using `BRAVE_SEARCH_API_KEY`.
+- `POST /api/regulations/documents/pdf/from-official-url`: protected download, review-confirmed PDF parsing and vector indexing.
+
+For the new-city discovery, provider setup and human review workflow, see
+[`docs/official-source-discovery.md`](docs/official-source-discovery.md).
 
 To import an official PDF, download it from the municipality's document repository,
 set `NORMBUILD_INGESTION_API_KEY`, and run `scripts/ingest-official-pdf.ps1` with

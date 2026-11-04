@@ -11,6 +11,9 @@
 - Persistent storage and scheduled, tested backups for the PostgreSQL volume.
 - Separate, long random values for `DATABASE_PASSWORD` and
   `NORMBUILD_INGESTION_API_KEY`, stored outside Git.
+- A Brave Search API key in `BRAVE_SEARCH_API_KEY` to enable the live search for
+  official sources in additional municipalities. Without it, the core assistant
+  runs but city discovery explicitly reports that search is unavailable.
 
 PostgreSQL with pgvector is required. The production compose file provisions it
 with a persistent named volume. Ollama and both model packages are also
