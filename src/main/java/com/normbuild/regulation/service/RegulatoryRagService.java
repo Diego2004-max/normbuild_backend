@@ -38,7 +38,6 @@ public class RegulatoryRagService {
     private final LlmClient llmClient;
     private final EmbeddingFormatter embeddingFormatter;
     private final RegulatoryPromptBuilder promptBuilder;
-    private final DeterministicChecklistBuilder deterministicChecklistBuilder;
     private final DocumentParsingService parsingService;
     private final RegulatoryDocumentRepository documentRepository;
     private final RegulatoryDocumentJdbcRepository jdbcRepository;
@@ -54,7 +53,6 @@ public class RegulatoryRagService {
             LlmClient llmClient,
             EmbeddingFormatter embeddingFormatter,
             RegulatoryPromptBuilder promptBuilder,
-            DeterministicChecklistBuilder deterministicChecklistBuilder,
             DocumentParsingService parsingService,
             RegulatoryDocumentRepository documentRepository,
             RegulatoryDocumentJdbcRepository jdbcRepository,
@@ -66,7 +64,6 @@ public class RegulatoryRagService {
         this.llmClient = llmClient;
         this.embeddingFormatter = embeddingFormatter;
         this.promptBuilder = promptBuilder;
-        this.deterministicChecklistBuilder = deterministicChecklistBuilder;
         this.parsingService = parsingService;
         this.documentRepository = documentRepository;
         this.jdbcRepository = jdbcRepository;
@@ -114,22 +111,24 @@ public class RegulatoryRagService {
             }
             onProgress.accept(pendingResponse(analysis, mapCitations(context)));
             String prompt = promptBuilder.buildChecklistPrompt(request, context, analysis);
-            String answer;
-            ChecklistGenerationMode generationMode = ChecklistGenerationMode.GENERATIVE;
             try {
-                answer = llmClient.generateChecklist(prompt);
-            } catch (AiProviderException exception) {
-                LOGGER.warn("LLM generation failed; returning guided checklist", exception);
-                answer = deterministicChecklistBuilder.build(request, context);
-                generationMode = ChecklistGenerationMode.GUIDED;
-            }
-            LOGGER.info("Checklist completed: mode={}, sources={}", generationMode, context.size());
-            ComplianceChecklistResponse response = new ComplianceChecklistResponse(answer, "Por verificar",
-                    mapCitations(context), OffsetDateTime.now(), generationMode, analysis);
-            if (generationMode == ChecklistGenerationMode.GENERATIVE) {
+                String answer = llmClient.generateChecklist(prompt);
+                LOGGER.info("Checklist completed: mode=GENERATIVE, sources={}", context.size());
+                ComplianceChecklistResponse response = new ComplianceChecklistResponse(answer, "Por verificar",
+                        mapCitations(context), OffsetDateTime.now(), ChecklistGenerationMode.GENERATIVE, analysis);
                 responseCache.put(cacheKey, response);
+                return response;
+            } catch (AiProviderException exception) {
+                LOGGER.warn("LLM generation unavailable; returning source references without a generated checklist", exception);
+                return new ComplianceChecklistResponse(
+                        "El modelo local no pudo completar la respuesta. No se generó un checklist ni se evaluó el cumplimiento. Las fuentes oficiales recuperadas se conservan como referencia; verifica el servicio de IA e inténtalo nuevamente.",
+                        "Por verificar",
+                        mapCitations(context),
+                        OffsetDateTime.now(),
+                        ChecklistGenerationMode.UNAVAILABLE,
+                        analysis
+                );
             }
-            return response;
         }, ragTaskExecutor);
     }
 

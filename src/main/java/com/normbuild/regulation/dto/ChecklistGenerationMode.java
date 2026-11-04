@@ -3,6 +3,6 @@ package com.normbuild.regulation.dto;
 public enum ChecklistGenerationMode {
     PENDING,
     GENERATIVE,
-    GUIDED,
+    UNAVAILABLE,
     NO_CONTEXT
 }

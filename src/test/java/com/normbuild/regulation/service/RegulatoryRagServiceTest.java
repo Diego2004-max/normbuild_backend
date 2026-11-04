@@ -45,7 +45,6 @@ class RegulatoryRagServiceTest {
                 "llama3.1", "nomic-embed-text", 0.35, 5, 30, 120, 4096, 512, "10m");
         service = new RegulatoryRagService(properties, embeddingClient, llmClient,
                 new EmbeddingFormatter(), new RegulatoryPromptBuilder(),
-                new DeterministicChecklistBuilder(new ProjectFactExtractor()),
                 parsingService, repository,
                 jdbcRepository, Runnable::run,
                 new ProjectAnalysisService(new ProjectFactExtractor()));
@@ -56,20 +55,18 @@ class RegulatoryRagServiceTest {
     }
 
     @Test
-    void reportsGuidedModeWhenGenerationFailsAndKeepsCitations() {
+    void reportsAiUnavailableWithoutInventingGuidanceAndKeepsCitations() {
         when(llmClient.generateChecklist(anyString())).thenThrow(new AiProviderException("Modelo no disponible."));
 
         ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
 
-        assertThat(response.generationMode()).isEqualTo(ChecklistGenerationMode.GUIDED);
-        assertThat(response.answer()).contains("Número de pisos: 2", "Altura propuesta: 7.5 m", "180 m²",
-                "Nivel de riesgo: Por verificar");
-        assertThat(response.answer()).doesNotContain("Medio-Alto", "POT de Bogotá");
+        assertThat(response.generationMode()).isEqualTo(ChecklistGenerationMode.UNAVAILABLE);
+        assertThat(response.answer()).contains("No se generó un checklist", "ni se evaluó el cumplimiento");
+        assertThat(response.answer()).doesNotContain("NSR-10", "licencia de construcción", "retiros", "índice de ocupación");
         assertThat(response.citations()).hasSize(1);
         assertThat(response.citations().getFirst().sourceUrl()).isEqualTo("https://bogotajuridica.gov.co/norma");
         assertThat(response.riskLevel()).isEqualTo("Por verificar");
     }
-
     @Test
     void doesNotTranslateHighSimilarityIntoLowComplianceRisk() {
         when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la norma específica del predio.");
@@ -147,7 +144,7 @@ class RegulatoryRagServiceTest {
     }
 
     @Test
-    void retriesGenerationAfterAGuidedFallback() {
+    void retriesGenerationAfterAnUnavailableAiResponse() {
         when(llmClient.generateChecklist(anyString())).thenThrow(new AiProviderException("Modelo no disponible."));
 
         service.answerComplianceQuestion(request).join();
