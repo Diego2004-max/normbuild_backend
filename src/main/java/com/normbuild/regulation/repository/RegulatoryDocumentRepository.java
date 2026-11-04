@@ -21,6 +21,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             FROM regulatory_documents
             WHERE jurisdiction IN (:jurisdiction, 'Colombia')
               AND source_url IS NOT NULL
+              AND (NOT :prioritizeLicensing OR content ~* 'licencias?|licenciamiento')
               AND (:includeSpecializedHousing OR content !~* '\\mVIP\\M')
               AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
               AND 1 - (embedding <=> CAST(:embedding AS vector)) >= :threshold
@@ -28,6 +29,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
                      + CASE WHEN :prioritizeBuildingRules AND :jurisdiction = 'Pasto'
                                  AND content ~* 'art[ií]culo\\s+250'
                             THEN -0.40 ELSE 0 END
+                     + CASE WHEN :prioritizeLicensing AND regulation_code ~* '1077' THEN -0.35 ELSE 0 END
                      + CASE WHEN :prioritizeBuildingRules AND content ~* 'edificabilidad.{0,40}equipamientos'
                             THEN 0.25 ELSE 0 END
             LIMIT :limit
@@ -38,6 +40,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             @Param("threshold") double threshold,
             @Param("prioritizeBuildingRules") boolean prioritizeBuildingRules,
             @Param("includeSpecializedHousing") boolean includeSpecializedHousing,
+            @Param("prioritizeLicensing") boolean prioritizeLicensing,
             @Param("limit") int limit
     );
 }

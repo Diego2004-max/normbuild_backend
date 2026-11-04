@@ -89,8 +89,10 @@ public class RegulatoryRagService {
         ProjectAnalysisResponse analysis = projectAnalysisService.analyze(request.projectDescription());
         onProgress.accept(pendingResponse(analysis, List.of()));
         boolean prioritizeBuildingRules = isBuildingRulesQuery(request.projectDescription());
-        String retrievalQuery = buildRetrievalQuery(request.projectDescription(), prioritizeBuildingRules);
-        int contextLimit = prioritizeBuildingRules ? Math.min(2, properties.maxContextResults()) : properties.maxContextResults();
+        boolean prioritizeLicensing = isLicensingQuery(request.projectDescription());
+        String retrievalQuery = buildRetrievalQuery(request.projectDescription(), prioritizeBuildingRules, prioritizeLicensing);
+        int contextLimit = prioritizeLicensing ? Math.min(3, properties.maxContextResults())
+                : prioritizeBuildingRules ? Math.min(2, properties.maxContextResults()) : properties.maxContextResults();
         CompletableFuture<List<Double>> embeddingFuture = CompletableFuture.supplyAsync(
                 () -> embeddingClient.createEmbedding(retrievalQuery),
                 ragTaskExecutor
@@ -103,6 +105,7 @@ public class RegulatoryRagService {
                     properties.similarityThreshold(),
                     prioritizeBuildingRules,
                     isSpecializedHousingQuery(request.projectDescription()),
+                    prioritizeLicensing,
                     contextLimit
             );
         }, ragTaskExecutor);
@@ -186,19 +189,27 @@ public class RegulatoryRagService {
                 .matcher(description).find();
     }
 
+    private boolean isLicensingQuery(String description) {
+        return java.util.regex.Pattern.compile("(?iu)\\b(licencias?|licenciamiento|radicar|tramitar)\\b")
+                .matcher(description).find();
+    }
+
     private boolean isSpecializedHousingQuery(String description) {
         return java.util.regex.Pattern.compile("(?iu)\\bvip\\b")
                 .matcher(description).find();
     }
 
-    private String buildRetrievalQuery(String description, boolean prioritizeBuildingRules) {
-        if (!prioritizeBuildingRules) {
-            return description;
+    private String buildRetrievalQuery(String description, boolean prioritizeBuildingRules, boolean prioritizeLicensing) {
+        StringBuilder query = new StringBuilder(description);
+        if (prioritizeBuildingRules) {
+            query.append("\nResidential urban land use, individual parcel building potential, maximum lot occupancy and construction indexes, "
+                    + "urban height and morphology rules, planning treatment and official parcel zoning records. Exclude equipment-only rules.");
         }
-        return description + "\nNormativa de vivienda residencial, uso residencial del suelo, edificabilidad para predio individual, "
-                + "índice de ocupación máximo, índice de construcción máximo, artículo 250 tipos de edificabilidad en suelo urbano, "
-                + "tabla de edificabilidades 0 1 2 y 3, altura máxima y código morfológico de alturas, "
-                + "tratamiento urbanístico y ficha normativa predial. Excluir límites que solo aplican a equipamientos.";
+        if (prioritizeLicensing) {
+            query.append("\nResidential building permit and urban planning license. Decree 1077 of 2015, construction license application, "
+                    + "required documents and filing process with the urban curatorship or municipal authority.");
+        }
+        return query.toString();
     }
 
     private void validateOfficialSource(String sourceUrl) {

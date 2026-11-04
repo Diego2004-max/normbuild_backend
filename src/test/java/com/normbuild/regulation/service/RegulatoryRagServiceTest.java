@@ -54,7 +54,7 @@ class RegulatoryRagServiceTest {
                 new RegulatoryAnswerSanitizer());
         when(embeddingClient.createEmbedding(anyString())).thenReturn(List.of(0.2, 0.8));
         RegulatoryDocumentProjection document = source();
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt()))
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt()))
                 .thenReturn(List.of(document));
     }
 
@@ -66,9 +66,23 @@ class RegulatoryRagServiceTest {
 
         ArgumentCaptor<String> retrievalQuery = ArgumentCaptor.forClass(String.class);
         verify(embeddingClient).createEmbedding(retrievalQuery.capture());
-        assertThat(retrievalQuery.getValue()).contains("vivienda residencial", "edificabilidad para predio individual",
-                "equipamientos");
-        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(false), eq(2));
+        assertThat(retrievalQuery.getValue()).contains("Residential urban land use", "individual parcel building potential",
+                "Exclude equipment-only rules");
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(false), eq(false), eq(2));
+    }
+
+    @Test
+    void prioritizesDecree1077AndFiltersOutNonLicensingChunksForPermitQuestions() {
+        when(llmClient.generateChecklist(anyString())).thenReturn("Consulta la ficha normativa del predio.");
+        ComplianceQueryRequest licensingRequest = new ComplianceQueryRequest(
+                "Bucaramanga", "Necesito licencia de construcci?n para una casa unifamiliar urbana.");
+
+        service.answerComplianceQuestion(licensingRequest).join();
+
+        ArgumentCaptor<String> retrievalQuery = ArgumentCaptor.forClass(String.class);
+        verify(embeddingClient).createEmbedding(retrievalQuery.capture());
+        assertThat(retrievalQuery.getValue()).contains("Decree 1077 of 2015", "required documents", "construction license application");
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(false), eq(true), eq(3));
     }
 
     @Test
@@ -78,7 +92,7 @@ class RegulatoryRagServiceTest {
         service.answerComplianceQuestion(new ComplianceQueryRequest(
                 "Medell\u00edn", "Quiero construir vivienda VIP en un lote urbano." )).join();
 
-        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(true), eq(2));
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(true), eq(false), eq(2));
     }
 
     @Test
@@ -108,7 +122,7 @@ class RegulatoryRagServiceTest {
 
     @Test
     void doesNotGenerateWithoutRetrievedSources() {
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt())).thenReturn(List.of());
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt())).thenReturn(List.of());
 
         ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
 
@@ -123,7 +137,7 @@ class RegulatoryRagServiceTest {
 
         assertThatThrownBy(() -> service.answerComplianceQuestion(request).join())
                 .isInstanceOf(CompletionException.class).hasCauseInstanceOf(AiProviderException.class);
-        verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt());
+        verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt());
         verify(llmClient, never()).generateChecklist(anyString());
     }
 
@@ -158,7 +172,7 @@ class RegulatoryRagServiceTest {
         String content = "Esta fuente contiene oraciones completas. ".repeat(30);
         RegulatoryDocumentProjection document = source();
         when(document.getContent()).thenReturn(content);
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt())).thenReturn(List.of(document));
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt())).thenReturn(List.of(document));
         when(llmClient.generateChecklist(anyString())).thenReturn("Revisión terminada.");
 
         ComplianceChecklistResponse first = service.answerComplianceQuestion(request).join();
