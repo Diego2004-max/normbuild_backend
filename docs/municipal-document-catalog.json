@@ -1,5 +1,5 @@
 {
-  "catalogVersion": 2,
+  "catalogVersion": 3,
   "reviewedOn": "2026-11-03",
   "description": "Official primary documents for human legal-status review before import. The city POT files are baselines, not a complete parcel-level corpus.",
   "documents": [
@@ -33,7 +33,31 @@
       "regulationCode": "Acuerdo Municipal 0373 de 2014",
       "sourceUrl": "https://web1.cali.gov.co/descargar.php?idFile=8155&plantilla=admin",
       "registryUrl": "https://www.cali.gov.co/planeacion/publicaciones/52108/documento-plan-de-ordenamiento-territorial/",
-      "reviewNotes": "Verificar la extensión judicial de vigencia reportada hasta 2027-07-09, actos posteriores y mapas oficiales."
+      "reviewNotes": "El enlace directo no fue descargable desde esta máquina; el repositorio municipal ofrece anexos complementarios, pero no deben tratarse como el POT completo. Verificar la extensión judicial de vigencia reportada hasta 2027-07-09, actos posteriores y mapas oficiales."
+    },
+    {
+      "title": "Normas volumétricas complementarias del POT de Santiago de Cali",
+      "jurisdiction": "Cali",
+      "regulationCode": "Acuerdo 0373 de 2014 - Normas volumétricas",
+      "sourceUrl": "https://idesc.cali.gov.co/download/pot_2014/normas_volumetricas.pdf",
+      "registryUrl": "https://web1.cali.gov.co/publicaciones.php?dPrint=1&id=52108",
+      "reviewNotes": "Anexo temático del repositorio oficial, no reemplaza el Acuerdo completo ni la cartografía. Confirmar alcance y vigencia antes de citarlo como regla aplicable a un predio."
+    },
+    {
+      "title": "Aclaraciones y normas complementarias del POT de Santiago de Cali",
+      "jurisdiction": "Cali",
+      "regulationCode": "Acuerdo 0373 de 2014 - Aclaraciones",
+      "sourceUrl": "https://idesc.cali.gov.co/download/pot_2014/normas_complementarias.pdf",
+      "registryUrl": "https://web1.cali.gov.co/publicaciones.php?dPrint=1&id=52108",
+      "reviewNotes": "El archivo del repositorio contiene aclaraciones y referencias corregidas. Revisar cada disposición junto con el Acuerdo adoptado; no asumir que todo su contenido modifica la norma."
+    },
+    {
+      "title": "Norma de equipamientos del POT de Santiago de Cali",
+      "jurisdiction": "Cali",
+      "regulationCode": "Acuerdo 0373 de 2014 - Equipamientos",
+      "sourceUrl": "https://idesc.cali.gov.co/download/pot_2014/norma_equipamientos.pdf",
+      "registryUrl": "https://web1.cali.gov.co/publicaciones.php?dPrint=1&id=52108",
+      "reviewNotes": "Documento temático de equipamientos; no usarlo para determinar por sí solo edificabilidad residencial, uso o condiciones de un predio."
     },
     {
       "title": "Plan de Ordenamiento Territorial de Bucaramanga 2014-2027",
@@ -52,12 +76,20 @@
       "reviewNotes": "Revisar modificaciones, mapas de amenazas y actos cartográficos posteriores antes de usar para una ubicación particular."
     },
     {
-      "title": "Plan de Ordenamiento Territorial de Cartagena de Indias",
+      "title": "Plan de Ordenamiento Territorial de Cartagena de Indias - Tomo I",
       "jurisdiction": "Cartagena",
-      "regulationCode": "Decreto Distrital 0977 de 2001",
-      "sourceUrl": "https://vuc.cartagena.gov.co/documentos/normatividad/DECRETO_0977_de_2001.pdf",
+      "regulationCode": "Decreto Distrital 0977 de 2001 - Tomo I",
+      "sourceUrl": "https://seguimientopot.cartagena.gov.co/sites/default/files/2024-12/Decreto_0977_2001_POT_Tomo_I%20%281%29.PDF",
       "registryUrl": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
-      "reviewNotes": "Verificar que el archivo contenga todos los tomos requeridos y revisar todos los actos posteriores del registro oficial."
+      "reviewNotes": "El registro oficial publica el POT por tomos. Este volumen contiene el Decreto 0977 de 2001; no representa cartografía parcelaria ni modificaciones posteriores."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Cartagena de Indias - Tomo II",
+      "jurisdiction": "Cartagena",
+      "regulationCode": "Decreto Distrital 0977 de 2001 - Tomo II",
+      "sourceUrl": "https://seguimientopot.cartagena.gov.co/sites/default/files/2024-12/Decreto_0977_2001_POT_Tomo_II.PDF",
+      "registryUrl": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
+      "reviewNotes": "Segundo archivo publicado en el registro oficial. Verificar su contenido y revisar actos, cartografía y determinantes actuales antes de aplicarlo a un predio."
     },
     {
       "title": "Decreto Único Reglamentario del Sector Vivienda, compilado hasta el 16 de febrero de 2026",
