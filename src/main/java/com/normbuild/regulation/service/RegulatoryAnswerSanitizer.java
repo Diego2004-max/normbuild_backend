@@ -17,7 +17,9 @@ public class RegulatoryAnswerSanitizer {
     private static final Pattern UNSUPPORTED_PARCEL_CLASSIFICATION = Pattern.compile(
             "(?iu)\\b(?:zona|nivel)\\s*\\d+|\\bpol.gono\\s+[A-Z0-9_-]*\\d[A-Z0-9_-]*");
     private static final Pattern UNSUPPORTED_MISSING_PROJECT_INDICES = Pattern.compile(
-            "(?iu).*\\b.*(?:ndices|ocupaci.n|construcci.n).*no est.n definidos?.*");
+            "(?iu).*\\b.*(?:ndices|ocupaci.n|construcci.n).*no (?:se pueden calcular|est.n definidos?|est. definido|fueron proporcionados|se proporcionaron).*");
+    private static final Pattern MODEL_ARTICLE_SELECTION_CLAIM = Pattern.compile(
+            "(?iu).*determinar si se aplica el art.culo\\s+\\d+\\s+o\\s+\\d+.*");
     private static final Pattern MODEL_TRUNCATION_NOTICE = Pattern.compile(
             "(?iu).*respuesta est. resumida por la capacidad del modelo local.*");
     private static final Pattern UNSUPPORTED_NUMERIC_LIMIT = Pattern.compile(
@@ -30,6 +32,7 @@ public class RegulatoryAnswerSanitizer {
             boolean unsupportedClassification = hasUnprovidedParcelClassification(line, projectDescription);
             if (!UNSUPPORTED_NUMERIC_LIMIT.matcher(line).find()
                     && !UNSUPPORTED_MISSING_PROJECT_INDICES.matcher(line).find()
+                    && !MODEL_ARTICLE_SELECTION_CLAIM.matcher(line).find()
                     && !MODEL_TRUNCATION_NOTICE.matcher(line).find()
                     && !unsupportedClassification && !line.isBlank()) {
                 String plainText = line.strip().replace("**", "");

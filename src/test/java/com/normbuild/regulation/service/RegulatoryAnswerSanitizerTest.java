@@ -95,10 +95,11 @@ class RegulatoryAnswerSanitizerTest {
                 new CitedRegulationResponse(UUID.randomUUID(), "POT Bucaramanga", "Acuerdo Municipal 011 de 2014",
                         "Articulo 313", "https://www.bucaramanga.gov.co/pot.pdf", 0.8, "Los proyectos no pueden superar indices."));
 
-        String answer = sanitizer.sanitize("Revisa los indices del predio.", analysis, citations,
+        String answer = sanitizer.sanitize("Los indices de ocupacion y construccion no se pueden calcular con la informacion proporcionada. Para determinar si se aplica el articulo 310 o 313, revisa la ficha.", analysis, citations,
                 "Vivienda unifamiliar en lote urbano.");
 
         assertThat(answer).contains("neta del predio", "180 m", "[1]");
         assertThat(answer).contains("no debe superar", "excepciones", "[2]");
+        assertThat(answer).doesNotContain("no se pueden calcular", "determinar si se aplica el articulo 310 o 313");
     }
 }
