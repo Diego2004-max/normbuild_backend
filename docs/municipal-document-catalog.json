@@ -18,13 +18,13 @@
           "reviewStatus": "Review and index the consolidated text before deployment."
         },
         {
-          "title": "Decreto Distrital 254 de 2026 - Corrections to Decree 670 of 2025",
+          "title": "Decreto Distrital 254 de 2026 - Correcciones al Decreto 670 de 2025",
           "url": "https://www.bogotajuridica.gov.co/sisjur/normas/Norma1.jsp?i=193592",
           "format": "Official legal registry HTML",
           "reviewStatus": "Verify all corrections against the consolidated text."
         },
         {
-          "title": "Decreto Distrital 466 de 2024 - POT common urban treatment rules, Annex 5",
+          "title": "Decreto Distrital 466 de 2024 - Anexo 5 del POT",
           "url": "https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?dt=S&i=170937",
           "format": "Official legal registry",
           "reviewStatus": "The decree text was compiled into Decree 670 of 2025 except for its annexes; verify Annex 5 and subsequent corrections before indexing."
@@ -96,7 +96,7 @@
       "reviewNotes": "POT base confirmado en el repositorio oficial. Contrastar con el Decreto 0893 de 2024, que adoptó un estudio de amenazas y actualizó los mapas U-10, U-11 y U-12; verificar cartografía vigente del predio.",
       "relatedOfficialSources": [
         {
-          "title": "Decreto Distrital 0893 de 2024 - Updated risk study and maps U-10, U-11 and U-12",
+          "title": "Decreto Distrital 0893 de 2024 - Actualización de estudio de riesgo y mapas U-10, U-11 y U-12",
           "url": "https://barranquilla.gov.co/plan-de-ordenamiento-territorial",
           "format": "Official POT registry with Gazette and map attachments",
           "reviewStatus": "Download and review the decree and geospatial annexes before indexing."
@@ -112,7 +112,7 @@
       "reviewNotes": "El POT se publica por tomos y no contiene por sí solo la cartografía predial ni todas las modificaciones posteriores. La Alcaldía registra una medida cautelar provisional sobre la expresión \"y obligatorias\" del artículo 291 y los artículos 304 a 306; verificar el estado judicial actual antes de citar esas disposiciones.",
       "relatedOfficialSources": [
         {
-          "title": "Judicial decision 13-001-33-31-004-2023-00203-00",
+          "title": "Sentencia 13-001-33-31-004-2023-00203-00",
           "url": "https://seguimientopot.cartagena.gov.co/sites/default/files/documentos/normativa/2024-12/SENTENCIA%2013%20001%2033%2031%20004%202023%2000203%2000%20%20DE%202023.pdf",
           "format": "Official court decision published by Cartagena POT office",
           "reviewStatus": "Provisional suspension reported; verify later procedural orders before indexing affected provisions."
@@ -128,7 +128,7 @@
       "reviewNotes": "El POT se publica por tomos y no contiene por sí solo la cartografía predial ni todas las modificaciones posteriores. La Alcaldía registra una medida cautelar provisional sobre la expresión \"y obligatorias\" del artículo 291 y los artículos 304 a 306; verificar el estado judicial actual antes de citar esas disposiciones.",
       "relatedOfficialSources": [
         {
-          "title": "Judicial decision 13-001-33-31-004-2023-00203-00",
+          "title": "Sentencia 13-001-33-31-004-2023-00203-00",
           "url": "https://seguimientopot.cartagena.gov.co/sites/default/files/documentos/normativa/2024-12/SENTENCIA%2013%20001%2033%2031%20004%202023%2000203%2000%20%20DE%202023.pdf",
           "format": "Official court decision published by Cartagena POT office",
           "reviewStatus": "Provisional suspension reported; verify later procedural orders before indexing affected provisions."

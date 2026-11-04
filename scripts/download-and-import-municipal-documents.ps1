@@ -8,6 +8,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $catalogPath = Join-Path $PSScriptRoot '..\docs\municipal-document-catalog.json'
 $ingestionScript = Join-Path $PSScriptRoot 'ingest-official-pdf.ps1'
+$catalogValidationScript = Join-Path $PSScriptRoot 'verify-document-catalog.ps1'
+& $catalogValidationScript -CatalogPath $catalogPath
 $catalog = Get-Content -LiteralPath $catalogPath -Raw -Encoding utf8 | ConvertFrom-Json
 $selectedDocumentCount = 0
 $downloadedDocumentCount = 0
