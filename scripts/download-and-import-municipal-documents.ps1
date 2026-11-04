@@ -9,6 +9,9 @@ $ErrorActionPreference = 'Stop'
 $catalogPath = Join-Path $PSScriptRoot '..\docs\municipal-document-catalog.json'
 $ingestionScript = Join-Path $PSScriptRoot 'ingest-official-pdf.ps1'
 $catalog = Get-Content -LiteralPath $catalogPath -Raw -Encoding utf8 | ConvertFrom-Json
+$selectedDocumentCount = 0
+$downloadedDocumentCount = 0
+$downloadFailureCount = 0
 $resolvedOutput = [IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $resolvedOutput -Force | Out-Null
 
@@ -25,6 +28,7 @@ foreach ($document in $catalog.documents) {
     if ($Jurisdictions.Count -gt 0 -and $document.jurisdiction -notin $Jurisdictions) {
         continue
     }
+    $selectedDocumentCount++
     if (-not (Test-OfficialHost $document.sourceUrl)) {
         throw "The source URL is not an official HTTPS .gov.co address: $($document.sourceUrl)"
     }
@@ -80,6 +84,7 @@ foreach ($document in $catalog.documents) {
     }
     catch {
         $failureMessage = $_.Exception.Message
+        $downloadFailureCount++
         if ($response) {
             $response.Dispose()
         }
@@ -104,6 +109,7 @@ foreach ($document in $catalog.documents) {
     }
 
     $checksum = (Get-FileHash -LiteralPath $pdfPath -Algorithm SHA256).Hash
+    $downloadedDocumentCount++
     Write-Output "Downloaded and verified PDF. SHA-256: $checksum"
     if ($DownloadOnly) {
         $auditPath = Join-Path $resolvedOutput 'ingestion-audit.csv'
@@ -148,4 +154,14 @@ foreach ($document in $catalog.documents) {
     } else {
         $auditRecord | Export-Csv -LiteralPath $auditPath -NoTypeInformation -Encoding UTF8
     }
+}
+
+if ($selectedDocumentCount -eq 0) {
+    $requestedJurisdictions = $Jurisdictions -join ', '
+    Write-Output "No catalog documents matched the requested jurisdictions: $requestedJurisdictions."
+    exit 2
+}
+Write-Output "Download summary: $downloadedDocumentCount downloaded, $downloadFailureCount failed, $selectedDocumentCount selected."
+if ($downloadFailureCount -gt 0) {
+    exit 1
 }
