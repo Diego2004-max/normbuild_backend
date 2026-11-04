@@ -37,7 +37,21 @@
       "regulationCode": "Acuerdo Municipal 004 de 2015",
       "sourceUrl": "https://www.pasto.gov.co/index.php/pot/396-pot-2015-2027?download=7974%3Aacuerdo_004_15_abr_2015",
       "registryUrl": "https://www.pasto.gov.co/index.php/pot",
-      "reviewNotes": "Verificar modificaciones posteriores, anexos y mapas aplicables al predio."
+      "reviewNotes": "El Acuerdo 004 de 2015 es el POT base publicado por el Municipio. El informe oficial de gestión 2025 registra que la revisión y ajuste seguía en curso y que el diagnóstico alcanzaba 95 %; verificar si hubo adopción posterior y consultar anexos y cartografía.",
+      "relatedOfficialSources": [
+        {
+          "title": "Portal oficial del POT de Pasto",
+          "url": "https://www.pasto.gov.co/index.php/pot",
+          "format": "Official municipal POT registry",
+          "reviewStatus": "Use this register to check for a subsequently adopted revision and official maps."
+        },
+        {
+          "title": "Informe de gestión 2025 - avance de revisión del POT",
+          "url": "https://www.pasto.gov.co/index.php/component/phocadownload/category/1001-documentos-2025/1008-rendicion-de-cuentas-2025?Itemid=101&download=31761%3Ainforme-de-gestion-2025",
+          "format": "Official municipal report PDF",
+          "reviewStatus": "The report records progress at 31 December 2025; it is evidence of a review process, not adopted replacement rules."
+        }
+      ]
     },
     {
       "title": "Plan de Ordenamiento Territorial de Medellín",
@@ -45,7 +59,15 @@
       "regulationCode": "Acuerdo Municipal 048 de 2014",
       "sourceUrl": "https://www.medellin.gov.co/es/wp-content/uploads/2022/10/POT-Medellin.pdf",
       "registryUrl": "https://www.medellin.gov.co/es/transparencia/plan-de-ordenamiento-territorial-de-medellin/reglamentacion-del-acuerdo-048-de-2014/",
-      "reviewNotes": "El Acuerdo 048 de 2014 es el POT vigente según la Alcaldía consultada. Revisar actos reglamentarios y precisiones cartográficas; la revisión publicada en 2026 es una propuesta mientras no se adopte."
+      "reviewNotes": "El Acuerdo 048 de 2014 es el POT vigente según la Alcaldía consultada. Revisar actos reglamentarios y precisiones cartográficas; la revisión publicada en 2026 es una propuesta mientras no se adopte.",
+      "relatedOfficialSources": [
+        {
+          "title": "Portal oficial del POT de Medellín",
+          "url": "https://www.medellin.gov.co/es/transparencia/plan-de-ordenamiento-territorial-de-medellin/",
+          "format": "Official municipal POT registry",
+          "reviewStatus": "Check current adopted rules and distinguish the 2026 review proposal from adopted law."
+        }
+      ]
     },
     {
       "title": "Plan de Ordenamiento Territorial de Santiago de Cali",
@@ -53,7 +75,15 @@
       "regulationCode": "Acuerdo Municipal 0373 de 2014",
       "sourceUrl": "https://planeacion.cali.gov.co/pot_adoptado/20141201%20ACUERDO%200373%20DE%202014.pdf",
       "registryUrl": "https://www.cali.gov.co/planeacion/publicaciones/52108/documento-plan-de-ordenamiento-territorial/",
-      "reviewNotes": "El portal municipal publica el Acuerdo 0373, pero la URL directa devolvió HTTP 403 desde este entorno. Los anexos descargados no sustituyen el articulado completo. Verificar vigencia, decisiones judiciales, actos posteriores y mapas antes de importarlo."
+      "reviewNotes": "El Tribunal Administrativo del Valle declaró la nulidad del Acuerdo 0373 de 2014 mediante Sentencia 129 del 25 de abril de 2024 y difirió los efectos. La Alcaldía informó el 28 de septiembre de 2026 que el plazo transitorio se extendió hasta el 9 de julio de 2027. Verificar la providencia judicial y cualquier POT nuevo adoptado antes de usar esta norma transitoria.",
+      "relatedOfficialSources": [
+        {
+          "title": "Comunicado oficial de Cali sobre la extensión transitoria del POT",
+          "url": "https://www.cali.gov.co/boletines/publicaciones/194584/cali-obtiene-seis-meses-adicionales-para-ajustar-el-pot-e-incorporar-las-lecciones-aprendidas-del-terremoto-del-10-de-agosto/",
+          "format": "Official municipal announcement",
+          "reviewStatus": "The city reports the Tribunal extension to 9 July 2027. Obtain and review the underlying judicial order before indexing the legal effect."
+        }
+      ]
     },
     {
       "title": "Normas volumétricas complementarias del POT de Santiago de Cali",
@@ -85,7 +115,21 @@
       "regulationCode": "Acuerdo Municipal 011 de 2014",
       "sourceUrl": "https://www.bucaramanga.gov.co/wp-content/uploads/2021/08/POT-2014-2027.pdf",
       "registryUrl": "https://www.bucaramanga.gov.co/bucaramanga-avanza/archivo-pot/",
-      "reviewNotes": "Separar estudios de seguimiento y propuestas de revisión de las normas adoptadas y vigentes."
+      "reviewNotes": "El POT adoptado es el Acuerdo 011 de 2014, con horizonte 2014-2027. La Alcaldía inició formalmente su revisión durante 2025; el seguimiento y los estudios de revisión no sustituyen una norma adoptada. Verificar actos de adopción posteriores y cartografía.",
+      "relatedOfficialSources": [
+        {
+          "title": "Portal oficial del POT vigente de Bucaramanga",
+          "url": "https://www.bucaramanga.gov.co/bucaramanga-avanza/plan-de-ordenamiento-territorial/",
+          "format": "Official municipal POT portal",
+          "reviewStatus": "Verify the adopted version and downloads; review drafts are not binding until adopted."
+        },
+        {
+          "title": "Seguimiento y evaluación del POT 2G - 2025",
+          "url": "https://www.bucaramanga.gov.co/wp-content/uploads/2025/12/V01_DOC_SEGUIMIENTO-EVALUACION-POT2G_2025.pdf",
+          "format": "Official municipal report PDF",
+          "reviewStatus": "Review evidence only; do not treat as an adopted amendment."
+        }
+      ]
     },
     {
       "title": "Plan de Ordenamiento Territorial de Barranquilla",
@@ -116,6 +160,12 @@
           "url": "https://seguimientopot.cartagena.gov.co/sites/default/files/documentos/normativa/2024-12/SENTENCIA%2013%20001%2033%2031%20004%202023%2000203%2000%20%20DE%202023.pdf",
           "format": "Official court decision published by Cartagena POT office",
           "reviewStatus": "Provisional suspension reported; verify later procedural orders before indexing affected provisions."
+        },
+        {
+          "title": "Documentos oficiales del POT vigente de Cartagena",
+          "url": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
+          "format": "Official municipal POT registry",
+          "reviewStatus": "Check the complete current document list, maps, amendments and court decisions."
         }
       ]
     },
@@ -132,6 +182,12 @@
           "url": "https://seguimientopot.cartagena.gov.co/sites/default/files/documentos/normativa/2024-12/SENTENCIA%2013%20001%2033%2031%20004%202023%2000203%2000%20%20DE%202023.pdf",
           "format": "Official court decision published by Cartagena POT office",
           "reviewStatus": "Provisional suspension reported; verify later procedural orders before indexing affected provisions."
+        },
+        {
+          "title": "Documentos oficiales del POT vigente de Cartagena",
+          "url": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
+          "format": "Official municipal POT registry",
+          "reviewStatus": "Check the complete current document list, maps, amendments and court decisions."
         }
       ]
     },
