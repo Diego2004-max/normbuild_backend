@@ -23,13 +23,19 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
               AND source_url IS NOT NULL
               AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
               AND 1 - (embedding <=> CAST(:embedding AS vector)) >= :threshold
-            ORDER BY embedding <=> CAST(:embedding AS vector)
+            ORDER BY (embedding <=> CAST(:embedding AS vector))
+                     + CASE WHEN :prioritizeBuildingRules AND :jurisdiction = 'Pasto'
+                                 AND content ~* 'art[ií]culo\\s+250'
+                            THEN -0.40 ELSE 0 END
+                     + CASE WHEN :prioritizeBuildingRules AND content ~* 'edificabilidad.{0,40}equipamientos'
+                            THEN 0.25 ELSE 0 END
             LIMIT :limit
             """, nativeQuery = true)
     List<RegulatoryDocumentProjection> findNearestRegulations(
             @Param("jurisdiction") String jurisdiction,
             @Param("embedding") String embedding,
             @Param("threshold") double threshold,
+            @Param("prioritizeBuildingRules") boolean prioritizeBuildingRules,
             @Param("limit") int limit
     );
 }

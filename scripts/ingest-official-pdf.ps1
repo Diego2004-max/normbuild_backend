@@ -13,6 +13,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Net.Http
 
 if ([string]::IsNullOrWhiteSpace($env:NORMBUILD_INGESTION_API_KEY)) {
     throw 'Set NORMBUILD_INGESTION_API_KEY before importing a document.'
@@ -33,6 +34,7 @@ if ($pdfBytes.Length -gt 40MB) {
 }
 
 $client = [Net.Http.HttpClient]::new()
+$client.Timeout = [TimeSpan]::FromMinutes(30)
 $multipart = [Net.Http.MultipartFormDataContent]::new()
 $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::Post, $ApiUrl)
 

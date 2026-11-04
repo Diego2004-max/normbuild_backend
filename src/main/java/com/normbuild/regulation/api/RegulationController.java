@@ -68,7 +68,7 @@ public class RegulationController {
 
     @PostMapping(value = "/compliance-checklist/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> streamComplianceChecklist(@Valid @RequestBody ComplianceQueryRequest request) {
-        SseEmitter emitter = new SseEmitter(180_000L);
+        SseEmitter emitter = new SseEmitter(300_000L);
         AtomicBoolean closed = new AtomicBoolean();
         emitter.onCompletion(() -> closed.set(true));
         emitter.onError(error -> closed.set(true));

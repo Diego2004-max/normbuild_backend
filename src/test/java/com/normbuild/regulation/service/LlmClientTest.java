@@ -69,9 +69,19 @@ class LlmClientTest {
         assertThat(request.path("options").path("temperature").asDouble()).isEqualTo(0.1);
     }
 
+    @Test
+    void returnsOnlyCompleteSentencesWhenModelReachesItsOutputLimit() {
+        responseBody = "{\"response\":\"El indice propuesto es 0.50. La altura depende de la ficha\",\"done\":true,\"done_reason\":\"length\"}";
+
+        String answer = client.generateChecklist("Test prompt");
+
+        assertThat(answer).startsWith("El indice propuesto es 0.50.");
+        assertThat(answer).doesNotContain("depende de la ficha");
+        assertThat(answer).contains("respuesta est\u00e1 resumida", "Riesgo: Por verificar.");
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"response\":\"Respuesta parcial.\",\"done\":true,\"done_reason\":\"length\"}",
             "{\"response\":\"Respuesta parcial.\",\"done\":false}",
             "{\"response\":\"\",\"done\":true}"
     })

@@ -43,6 +43,7 @@ public class RegulatoryRagService {
     private final RegulatoryDocumentJdbcRepository jdbcRepository;
     private final Executor ragTaskExecutor;
     private final ProjectAnalysisService projectAnalysisService;
+    private final RegulatoryAnswerSanitizer answerSanitizer;
     private final AtomicLong knowledgeVersion = new AtomicLong();
     private final Cache<QueryCacheKey, ComplianceChecklistResponse> responseCache = Caffeine.newBuilder()
             .maximumSize(100).expireAfterWrite(Duration.ofMinutes(5)).build();
@@ -57,7 +58,8 @@ public class RegulatoryRagService {
             RegulatoryDocumentRepository documentRepository,
             RegulatoryDocumentJdbcRepository jdbcRepository,
             @Qualifier("ragTaskExecutor") Executor ragTaskExecutor,
-            ProjectAnalysisService projectAnalysisService
+            ProjectAnalysisService projectAnalysisService,
+            RegulatoryAnswerSanitizer answerSanitizer
     ) {
         this.properties = properties;
         this.embeddingClient = embeddingClient;
@@ -69,6 +71,7 @@ public class RegulatoryRagService {
         this.jdbcRepository = jdbcRepository;
         this.ragTaskExecutor = ragTaskExecutor;
         this.projectAnalysisService = projectAnalysisService;
+        this.answerSanitizer = answerSanitizer;
     }
 
     public CompletableFuture<ComplianceChecklistResponse> answerComplianceQuestion(ComplianceQueryRequest request) {
@@ -85,8 +88,11 @@ public class RegulatoryRagService {
         }
         ProjectAnalysisResponse analysis = projectAnalysisService.analyze(request.projectDescription());
         onProgress.accept(pendingResponse(analysis, List.of()));
+        boolean prioritizeBuildingRules = isBuildingRulesQuery(request.projectDescription());
+        String retrievalQuery = buildRetrievalQuery(request.projectDescription(), prioritizeBuildingRules);
+        int contextLimit = prioritizeBuildingRules ? Math.min(2, properties.maxContextResults()) : properties.maxContextResults();
         CompletableFuture<List<Double>> embeddingFuture = CompletableFuture.supplyAsync(
-                () -> embeddingClient.createEmbedding(request.projectDescription()),
+                () -> embeddingClient.createEmbedding(retrievalQuery),
                 ragTaskExecutor
         );
         CompletableFuture<List<RegulatoryDocumentProjection>> contextFuture = embeddingFuture.thenApplyAsync(embedding -> {
@@ -95,7 +101,8 @@ public class RegulatoryRagService {
                     JurisdictionNormalizer.canonicalize(request.jurisdiction()),
                     vectorLiteral,
                     properties.similarityThreshold(),
-                    properties.maxContextResults()
+                    prioritizeBuildingRules,
+                    contextLimit
             );
         }, ragTaskExecutor);
         return contextFuture.thenApplyAsync(context -> {
@@ -112,7 +119,7 @@ public class RegulatoryRagService {
             onProgress.accept(pendingResponse(analysis, mapCitations(context)));
             String prompt = promptBuilder.buildChecklistPrompt(request, context, analysis);
             try {
-                String answer = llmClient.generateChecklist(prompt);
+                String answer = answerSanitizer.sanitize(llmClient.generateChecklist(prompt), analysis, mapCitations(context));
                 LOGGER.info("Checklist completed: mode=GENERATIVE, sources={}", context.size());
                 ComplianceChecklistResponse response = new ComplianceChecklistResponse(answer, "Por verificar",
                         mapCitations(context), OffsetDateTime.now(), ChecklistGenerationMode.GENERATIVE, analysis);
@@ -137,9 +144,8 @@ public class RegulatoryRagService {
         validateOfficialSource(request.sourceUrl());
         String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
         CompletableFuture<String> normalizedFuture = parsingService.normalizeContentAsync(request.content());
-        CompletableFuture<String> summaryFuture = parsingService.buildSearchSummaryAsync(request.content());
-        return normalizedFuture.thenCombineAsync(summaryFuture, (normalized, summary) -> {
-            List<Double> embedding = embeddingClient.createEmbedding(summary + "\n" + normalized);
+        return normalizedFuture.thenApplyAsync(normalized -> {
+            List<Double> embedding = embeddingClient.createEmbedding(normalized);
             UUID documentId = UUID.nameUUIDFromBytes((jurisdiction.toLowerCase(java.util.Locale.ROOT)
                     + "|" + request.sourceUrl() + "|" + request.articleReference().strip() + "|" + normalized)
                     .getBytes(StandardCharsets.UTF_8));
@@ -172,6 +178,21 @@ public class RegulatoryRagService {
                         document.getContent()
                 ))
                 .toList();
+    }
+
+    private boolean isBuildingRulesQuery(String description) {
+        return java.util.regex.Pattern.compile("(?iu)\\b(casa|vivienda|residencial|habitacional|unifamiliar|bifamiliar|edificabilidad|ocupaci[oó]n|construcci[oó]n|\\u00edndices?)\\b")
+                .matcher(description).find();
+    }
+
+    private String buildRetrievalQuery(String description, boolean prioritizeBuildingRules) {
+        if (!prioritizeBuildingRules) {
+            return description;
+        }
+        return description + "\nNormativa de vivienda residencial, uso residencial del suelo, edificabilidad para predio individual, "
+                + "índice de ocupación máximo, índice de construcción máximo, artículo 250 tipos de edificabilidad en suelo urbano, "
+                + "tabla de edificabilidades 0 1 2 y 3, altura máxima y código morfológico de alturas, "
+                + "tratamiento urbanístico y ficha normativa predial. Excluir límites que solo aplican a equipamientos.";
     }
 
     private void validateOfficialSource(String sourceUrl) {

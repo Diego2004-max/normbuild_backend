@@ -12,7 +12,7 @@ spring:
     name: normbuild-api
   mvc:
     async:
-      request-timeout: 180000
+      request-timeout: ${SPRING_MVC_ASYNC_REQUEST_TIMEOUT:900000}
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5435/normbuild}
     username: ${DATABASE_USERNAME:normbuild}
@@ -38,9 +38,9 @@ normbuild:
     model-name: ${NORMBUILD_MODEL_NAME:llama3.1}
     embedding-model-name: ${NORMBUILD_EMBEDDING_MODEL_NAME:nomic-embed-text}
     similarity-threshold: 0.35
-    max-context-results: 5
+    max-context-results: ${NORMBUILD_MAX_CONTEXT_RESULTS:3}
     embedding-timeout-seconds: ${NORMBUILD_EMBEDDING_TIMEOUT_SECONDS:30}
     llm-timeout-seconds: ${NORMBUILD_LLM_TIMEOUT_SECONDS:240}
     llm-context-tokens: ${NORMBUILD_LLM_CONTEXT_TOKENS:4096}
-    llm-max-output-tokens: ${NORMBUILD_LLM_MAX_OUTPUT_TOKENS:512}
+    llm-max-output-tokens: ${NORMBUILD_LLM_MAX_OUTPUT_TOKENS:128}
     model-keep-alive: ${NORMBUILD_MODEL_KEEP_ALIVE:10m}

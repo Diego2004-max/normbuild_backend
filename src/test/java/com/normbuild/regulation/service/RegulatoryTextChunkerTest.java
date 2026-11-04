@@ -22,7 +22,7 @@ class RegulatoryTextChunkerTest {
         List<String> chunks = chunker.chunk(text);
 
         assertThat(chunks).hasSizeGreaterThan(1);
-        assertThat(chunks).allSatisfy(chunk -> assertThat(chunk.length()).isLessThanOrEqualTo(6000));
+        assertThat(chunks).allSatisfy(chunk -> assertThat(chunk.length()).isLessThanOrEqualTo(3000));
         for (int index = 1; index < chunks.size(); index++) {
             String previous = chunks.get(index - 1);
             String current = chunks.get(index);

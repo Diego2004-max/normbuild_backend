@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class RegulatoryTextChunker {
 
-    private static final int MAX_CHUNK_LENGTH = 6000;
+    // Keep embedding inputs comfortably below the local model's 2048-token context window.
+    private static final int MAX_CHUNK_LENGTH = 3000;
     private static final int CHUNK_OVERLAP = 400;
     private static final Pattern ARTICLE_HEADING = Pattern.compile(
             "(?ium)^\\h*ART[IÍ]CULO\\h+(\\d{1,4}[A-Z]?(?:[.-]\\d+)*(?:-[A-Z])?)\\b[^\\r\\n]*");

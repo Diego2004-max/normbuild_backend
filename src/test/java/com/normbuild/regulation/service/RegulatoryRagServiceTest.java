@@ -3,14 +3,17 @@ package com.normbuild.regulation.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
+import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 
 import com.normbuild.config.NormBuildAiProperties;
@@ -47,11 +50,25 @@ class RegulatoryRagServiceTest {
                 new EmbeddingFormatter(), new RegulatoryPromptBuilder(),
                 parsingService, repository,
                 jdbcRepository, Runnable::run,
-                new ProjectAnalysisService(new ProjectFactExtractor()));
+                new ProjectAnalysisService(new ProjectFactExtractor()),
+                new RegulatoryAnswerSanitizer());
         when(embeddingClient.createEmbedding(anyString())).thenReturn(List.of(0.2, 0.8));
         RegulatoryDocumentProjection document = source();
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyInt()))
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt()))
                 .thenReturn(List.of(document));
+    }
+
+    @Test
+    void enrichesResidentialSearchWithoutChangingTheCitizenQuestion() {
+        when(llmClient.generateChecklist(anyString())).thenReturn("Revisión terminada.");
+
+        service.answerComplianceQuestion(request).join();
+
+        ArgumentCaptor<String> retrievalQuery = ArgumentCaptor.forClass(String.class);
+        verify(embeddingClient).createEmbedding(retrievalQuery.capture());
+        assertThat(retrievalQuery.getValue()).contains("vivienda residencial", "edificabilidad para predio individual",
+                "equipamientos");
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(2));
     }
 
     @Test
@@ -81,7 +98,7 @@ class RegulatoryRagServiceTest {
 
     @Test
     void doesNotGenerateWithoutRetrievedSources() {
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyInt())).thenReturn(List.of());
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt())).thenReturn(List.of());
 
         ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
 
@@ -96,7 +113,7 @@ class RegulatoryRagServiceTest {
 
         assertThatThrownBy(() -> service.answerComplianceQuestion(request).join())
                 .isInstanceOf(CompletionException.class).hasCauseInstanceOf(AiProviderException.class);
-        verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyInt());
+        verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt());
         verify(llmClient, never()).generateChecklist(anyString());
     }
 
@@ -131,7 +148,7 @@ class RegulatoryRagServiceTest {
         String content = "Esta fuente contiene oraciones completas. ".repeat(30);
         RegulatoryDocumentProjection document = source();
         when(document.getContent()).thenReturn(content);
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyInt())).thenReturn(List.of(document));
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt())).thenReturn(List.of(document));
         when(llmClient.generateChecklist(anyString())).thenReturn("Revisión terminada.");
 
         ComplianceChecklistResponse first = service.answerComplianceQuestion(request).join();
