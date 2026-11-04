@@ -4,7 +4,10 @@ import com.normbuild.regulation.dto.ComplianceChecklistResponse;
 import com.normbuild.regulation.dto.ComplianceQueryRequest;
 import com.normbuild.regulation.dto.DocumentIngestionRequest;
 import com.normbuild.regulation.dto.DocumentIngestionResponse;
+import com.normbuild.regulation.dto.PdfDocumentIngestionRequest;
+import com.normbuild.regulation.dto.PdfDocumentIngestionResponse;
 import com.normbuild.regulation.service.RegulatoryRagService;
+import com.normbuild.regulation.service.RegulatoryPdfIngestionService;
 import jakarta.validation.Valid;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,7 +28,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/regulations")
@@ -33,12 +38,15 @@ import org.springframework.web.server.ResponseStatusException;
 public class RegulationController {
 
     private final RegulatoryRagService ragService;
+    private final RegulatoryPdfIngestionService pdfIngestionService;
     private final String ingestionApiKey;
 
     public RegulationController(
             RegulatoryRagService ragService,
+            RegulatoryPdfIngestionService pdfIngestionService,
             @Value("${normbuild.security.ingestion-api-key:}") String ingestionApiKey) {
         this.ragService = ragService;
+        this.pdfIngestionService = pdfIngestionService;
         this.ingestionApiKey = ingestionApiKey;
     }
 
@@ -94,10 +102,25 @@ public class RegulationController {
     public CompletableFuture<DocumentIngestionResponse> ingestDocument(
             @Valid @RequestBody DocumentIngestionRequest request,
             @RequestHeader(value = "X-NormBuild-Ingestion-Key", required = false) String providedKey) {
+        authorizeIngestion(providedKey);
+        return ragService.ingestDocument(request);
+    }
+
+    @PostMapping(value = "/documents/pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public CompletableFuture<PdfDocumentIngestionResponse> ingestPdfDocument(
+            @RequestPart("file") MultipartFile file,
+            @Valid @RequestPart("metadata") PdfDocumentIngestionRequest metadata,
+            @RequestHeader(value = "X-NormBuild-Ingestion-Key", required = false) String providedKey) {
+        authorizeIngestion(providedKey);
+        return pdfIngestionService.ingest(file, metadata.title(), metadata.jurisdiction(),
+                metadata.regulationCode(), metadata.sourceUrl());
+    }
+
+    private void authorizeIngestion(String providedKey) {
         if (ingestionApiKey.isBlank() || providedKey == null
                 || !MessageDigest.isEqual(ingestionApiKey.getBytes(StandardCharsets.UTF_8), providedKey.getBytes(StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Se requiere una clave de administración válida.");
         }
-        return ragService.ingestDocument(request);
     }
 }
