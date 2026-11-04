@@ -1,0 +1,111 @@
+{
+  "catalogVersion": 2,
+  "reviewedOn": "2026-11-03",
+  "description": "Official primary documents for human legal-status review before import. The city POT files are baselines, not a complete parcel-level corpus.",
+  "documents": [
+    {
+      "title": "Plan de Ordenamiento Territorial de Bogotá D.C.",
+      "jurisdiction": "Bogotá D.C.",
+      "regulationCode": "Decreto Distrital 555 de 2021",
+      "sourceUrl": "https://bogota.gov.co/bog/pot-2022-2035/Decreto_555_de_2021.pdf",
+      "registryUrl": "https://www.bogotajuridica.gov.co/sisjur/normas/Norma1.jsp?i=119582",
+      "reviewNotes": "Revisar Decretos 466 de 2024 y 466 de 2026, demás actos vigentes y cartografía actual antes de considerar completo el corpus."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Pasto 2015-2027",
+      "jurisdiction": "Pasto",
+      "regulationCode": "Acuerdo Municipal 004 de 2015",
+      "sourceUrl": "https://www.pasto.gov.co/index.php/pot/396-pot-2015-2027?download=7974%3Aacuerdo_004_15_abr_2015",
+      "registryUrl": "https://www.pasto.gov.co/index.php/pot",
+      "reviewNotes": "Verificar modificaciones posteriores, anexos y mapas aplicables al predio."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Medellín",
+      "jurisdiction": "Medellín",
+      "regulationCode": "Acuerdo Municipal 048 de 2014",
+      "sourceUrl": "https://www.medellin.gov.co/es/wp-content/uploads/2022/10/POT-Medellin.pdf",
+      "registryUrl": "https://www.medellin.gov.co/es/transparencia/plan-de-ordenamiento-territorial-de-medellin/reglamentacion-del-acuerdo-048-de-2014/",
+      "reviewNotes": "Revisar actos reglamentarios y precisiones cartográficas posteriores; no basta el acuerdo base para una consulta predial."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Santiago de Cali",
+      "jurisdiction": "Cali",
+      "regulationCode": "Acuerdo Municipal 0373 de 2014",
+      "sourceUrl": "https://web1.cali.gov.co/descargar.php?idFile=8155&plantilla=admin",
+      "registryUrl": "https://www.cali.gov.co/planeacion/publicaciones/52108/documento-plan-de-ordenamiento-territorial/",
+      "reviewNotes": "Verificar la extensión judicial de vigencia reportada hasta 2027-07-09, actos posteriores y mapas oficiales."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Bucaramanga 2014-2027",
+      "jurisdiction": "Bucaramanga",
+      "regulationCode": "Acuerdo Municipal 011 de 2014",
+      "sourceUrl": "https://www.bucaramanga.gov.co/wp-content/uploads/2021/08/POT-2014-2027.pdf",
+      "registryUrl": "https://www.bucaramanga.gov.co/bucaramanga-avanza/archivo-pot/",
+      "reviewNotes": "Separar estudios de seguimiento y propuestas de revisión de las normas adoptadas y vigentes."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Barranquilla",
+      "jurisdiction": "Barranquilla",
+      "regulationCode": "Decreto Distrital 0212 de 2014",
+      "sourceUrl": "https://barranquilla.gov.co/documento/decreto-0212-de-2014-adopta-pot/?version=1.1",
+      "registryUrl": "https://barranquilla.gov.co/plan-de-ordenamiento-territorial",
+      "reviewNotes": "Revisar modificaciones, mapas de amenazas y actos cartográficos posteriores antes de usar para una ubicación particular."
+    },
+    {
+      "title": "Plan de Ordenamiento Territorial de Cartagena de Indias",
+      "jurisdiction": "Cartagena",
+      "regulationCode": "Decreto Distrital 0977 de 2001",
+      "sourceUrl": "https://vuc.cartagena.gov.co/documentos/normatividad/DECRETO_0977_de_2001.pdf",
+      "registryUrl": "https://seguimientopot.cartagena.gov.co/documentos-del-pot-vigente",
+      "reviewNotes": "Verificar que el archivo contenga todos los tomos requeridos y revisar todos los actos posteriores del registro oficial."
+    },
+    {
+      "title": "Decreto Único Reglamentario del Sector Vivienda, compilado hasta el 16 de febrero de 2026",
+      "jurisdiction": "Colombia",
+      "regulationCode": "Decreto 1077 de 2015, compilado al 2026-02-16",
+      "sourceUrl": "https://minvivienda.gov.co/sites/default/files/normativa/decreto-unico-vivienda-actualizado-ultima-actualizacion-16022026_0_1.pdf",
+      "registryUrl": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=77216",
+      "reviewNotes": "Revisar modificaciones posteriores al 16 de febrero de 2026. El Decreto 381 de 2026 modifica el Decreto 1077 y debe importarse por separado."
+    },
+    {
+      "title": "Procedimiento para la expedición de determinantes de ordenamiento territorial",
+      "jurisdiction": "Colombia",
+      "regulationCode": "Decreto 381 de 2026",
+      "sourceUrl": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma_pdf.php?i=275556",
+      "registryUrl": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=275556",
+      "reviewNotes": "Verificar publicación, vigencia, régimen de transición y aplicación al instrumento territorial consultado."
+    },
+    {
+      "title": "Decreto de adopción del Reglamento Colombiano de Construcción Sismo Resistente NSR-10",
+      "jurisdiction": "Colombia",
+      "regulationCode": "Decreto 0926 de 2010",
+      "sourceUrl": "https://www.minvivienda.gov.co/sites/default/files/normativa/0926%20%20-%202010.pdf",
+      "registryUrl": "https://www.minvivienda.gov.co/normativa?search_api_fulltext=nsr+10",
+      "reviewNotes": "El PDF descargado es el acto de adopción y no contiene el cuerpo técnico completo de la NSR-10. No debe citarse como fuente de cálculos estructurales; se requiere acceso autorizado al anexo técnico y a todos sus actos modificatorios."
+    },
+    {
+      "title": "Modificación parcial de la NSR-10",
+      "jurisdiction": "Colombia",
+      "regulationCode": "Decreto 1401 de 2023",
+      "sourceUrl": "https://minvivienda.gov.co/sites/default/files/normativa/1401-2023.pdf",
+      "registryUrl": "https://www.minvivienda.gov.co/normativa/decreto-1401-2023",
+      "reviewNotes": "Importar junto con su corrección del Decreto 1580 de 2023 y verificar modificaciones posteriores."
+    },
+    {
+      "title": "Corrección del Decreto 1401 de 2023 sobre NSR-10",
+      "jurisdiction": "Colombia",
+      "regulationCode": "Decreto 1580 de 2023",
+      "sourceUrl": "https://minvivienda.gov.co/sites/default/files/normativa/1580_2023.pdf",
+      "registryUrl": "https://minvivienda.gov.co/normativa/decreto-1580-2023",
+      "reviewNotes": "Verificar actos modificatorios posteriores y la compilación vigente del reglamento."
+    },
+    {
+      "title": "Intervenciones de vivienda con reglas relacionadas con NSR-10",
+      "jurisdiction": "Colombia",
+      "regulationCode": "Decreto 1166 de 2025",
+      "sourceUrl": "https://www.minvivienda.gov.co/sites/default/files/normativa/decreto-1166-de-2025.pdf",
+      "registryUrl": "https://www.minvivienda.gov.co/normativa?search_api_fulltext=nsr+10",
+      "reviewNotes": "Verificar su ámbito específico: intervenciones de mejoramiento de vivienda, vivienda progresiva o construcción en sitio propio objeto de subsidio. No generalizar su aplicación a toda obra."
+    }
+  ]
+}
