@@ -8,19 +8,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RegulatoryAnswerSanitizer {
 
+    private static final Pattern UNSUPPORTED_PARCEL_CLASSIFICATION = Pattern.compile(
+            "(?iu)\\b(?:zona|nivel)\\s*\\d+|\\bpol.gono\\s+[A-Z0-9_-]*\\d[A-Z0-9_-]*");
+    private static final Pattern MODEL_TRUNCATION_NOTICE = Pattern.compile(
+            "(?iu).*respuesta est. resumida por la capacidad del modelo local.*");
     private static final Pattern UNSUPPORTED_NUMERIC_LIMIT = Pattern.compile(
             "(?iu)(?:m[aá]xim[oa]|permitid[oa])[^.!?\\n]*\\d|\\d[^.!?\\n]*(?:m[aá]xim[oa]|permitid[oa])");
 
     public String sanitize(String generatedAnswer, ProjectAnalysisResponse analysis,
-                          List<CitedRegulationResponse> citations) {
+                          List<CitedRegulationResponse> citations, String projectDescription) {
         List<String> safeLines = new ArrayList<>();
         for (String line : generatedAnswer.lines().toList()) {
-            if (!UNSUPPORTED_NUMERIC_LIMIT.matcher(line).find() && !line.isBlank()) {
+            boolean unsupportedClassification = hasUnprovidedParcelClassification(line, projectDescription);
+            if (!UNSUPPORTED_NUMERIC_LIMIT.matcher(line).find()
+                    && !MODEL_TRUNCATION_NOTICE.matcher(line).find()
+                    && !unsupportedClassification && !line.isBlank()) {
                 String plainText = line.strip().replace("**", "");
                 if (plainText.startsWith("* ")) {
                     plainText = plainText.substring(2);
@@ -34,7 +42,8 @@ public class RegulatoryAnswerSanitizer {
         if (!proposedRatios.isBlank()) {
             sections.add(proposedRatios);
         }
-        String safeChecklist = String.join("\n", safeLines);
+        String safeChecklist = String.join("\n", safeLines)
+                .replaceAll("(?im)^.*\\bpasos\\s*:\s*(?:\\R\\s*\\R|$)", "");
         if (!safeChecklist.isBlank()) {
             sections.add(safeChecklist);
         }
@@ -47,6 +56,17 @@ public class RegulatoryAnswerSanitizer {
         return String.join("\n\n", sections);
     }
 
+    private boolean hasUnprovidedParcelClassification(String line, String projectDescription) {
+        Matcher matcher = UNSUPPORTED_PARCEL_CLASSIFICATION.matcher(line);
+        String normalizedDescription = projectDescription.toLowerCase(Locale.ROOT);
+        while (matcher.find()) {
+            if (!normalizedDescription.contains(matcher.group().toLowerCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String buildVerificationChecklist(List<CitedRegulationResponse> citations) {
         List<String> checks = new ArrayList<>();
         for (int index = 0; index < citations.size(); index++) {
@@ -57,6 +77,20 @@ public class RegulatoryAnswerSanitizer {
             }
             if (reference != null && reference.matches("(?iu).*\\b267\\b.*")) {
                 checks.add("2. Si la edificación es aislada, verificar los retiros y aislamientos exigidos para las dimensiones del lote [" + citationNumber + "].");
+            }
+            if (reference != null && reference.matches("(?iu).*\\b280\\b.*")
+                    && citations.get(index).regulationCode().contains("048 de 2014")) {
+                checks.add("El art" + (char) 237 + "culo 280 organiza aprovechamientos y alturas por c" + (char) 243
+                        + "digo de pol" + (char) 237 + "gono; falta el c" + (char) 243
+                        + "digo del predio para seleccionar una fila aplicable [" + citationNumber + "].");
+            }
+            if (reference != null && reference.matches("(?iu).*\\b282\\b.*")
+                    && citations.get(index).regulationCode().contains("048 de 2014")) {
+                checks.add("El art" + (char) 237 + "culo 282 diferencia los " + (char) 237
+                        + "ndices de ocupaci" + (char) 243 + "n seg" + (char) 250
+                        + "n tratamiento y mixtura; para viviendas uni, bi y trifamiliares remite a las normas de patios y vac" + (char) 237
+                        + "os. Confirma la categor" + (char) 237 + "a y la ficha normativa del predio antes de evaluar el 50% propuesto ["
+                        + citationNumber + "].");
             }
         }
         if (checks.isEmpty()) {

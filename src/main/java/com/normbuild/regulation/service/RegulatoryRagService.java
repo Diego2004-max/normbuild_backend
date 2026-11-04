@@ -102,6 +102,7 @@ public class RegulatoryRagService {
                     vectorLiteral,
                     properties.similarityThreshold(),
                     prioritizeBuildingRules,
+                    isSpecializedHousingQuery(request.projectDescription()),
                     contextLimit
             );
         }, ragTaskExecutor);
@@ -119,7 +120,7 @@ public class RegulatoryRagService {
             onProgress.accept(pendingResponse(analysis, mapCitations(context)));
             String prompt = promptBuilder.buildChecklistPrompt(request, context, analysis);
             try {
-                String answer = answerSanitizer.sanitize(llmClient.generateChecklist(prompt), analysis, mapCitations(context));
+                String answer = answerSanitizer.sanitize(llmClient.generateChecklist(prompt), analysis, mapCitations(context), request.projectDescription());
                 LOGGER.info("Checklist completed: mode=GENERATIVE, sources={}", context.size());
                 ComplianceChecklistResponse response = new ComplianceChecklistResponse(answer, "Por verificar",
                         mapCitations(context), OffsetDateTime.now(), ChecklistGenerationMode.GENERATIVE, analysis);
@@ -182,6 +183,11 @@ public class RegulatoryRagService {
 
     private boolean isBuildingRulesQuery(String description) {
         return java.util.regex.Pattern.compile("(?iu)\\b(casa|vivienda|residencial|habitacional|unifamiliar|bifamiliar|edificabilidad|ocupaci[oó]n|construcci[oó]n|\\u00edndices?)\\b")
+                .matcher(description).find();
+    }
+
+    private boolean isSpecializedHousingQuery(String description) {
+        return java.util.regex.Pattern.compile("(?iu)\\bvip\\b")
                 .matcher(description).find();
     }
 

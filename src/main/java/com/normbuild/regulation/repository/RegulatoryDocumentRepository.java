@@ -21,6 +21,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             FROM regulatory_documents
             WHERE jurisdiction IN (:jurisdiction, 'Colombia')
               AND source_url IS NOT NULL
+              AND (:includeSpecializedHousing OR content !~* '\\mVIP\\M')
               AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
               AND 1 - (embedding <=> CAST(:embedding AS vector)) >= :threshold
             ORDER BY (embedding <=> CAST(:embedding AS vector))
@@ -36,6 +37,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             @Param("embedding") String embedding,
             @Param("threshold") double threshold,
             @Param("prioritizeBuildingRules") boolean prioritizeBuildingRules,
+            @Param("includeSpecializedHousing") boolean includeSpecializedHousing,
             @Param("limit") int limit
     );
 }

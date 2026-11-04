@@ -23,15 +23,15 @@ public class ProjectFactExtractor {
             "\\baltura(?:\\s+total)?(?:\\s+propuesta)?(?:\\s+(?:de|es))?\\s*[:=]?\\s*" + LENGTH_VALUE);
     private static final Pattern TRAILING_HEIGHT_PATTERN = Pattern.compile(
             "\\b" + LENGTH_VALUE + "\\s+de\\s+(?:altura|alto)\\b");
-    private static final Pattern AREA_PATTERN = Pattern.compile("(\\d+(?:[\\.,]\\d+)?)\\s*(metros?\\s*cuadrados|m2|m²)", Pattern.CASE_INSENSITIVE);
-    private static final String AREA_VALUE = "(-?\\d+(?:[.,]\\d+)?)\\s*(?:metros?\\s*cuadrados|m²|m2)(?![\\p{L}\\d])";
+    private static final Pattern AREA_PATTERN = Pattern.compile("(\\d+(?:[\\.,]\\d+)?)\\s*(metros?\\s*cuadrados|m(?:2|²|Â²))", Pattern.CASE_INSENSITIVE);
+    private static final String AREA_VALUE = "(-?\\d+(?:[.,]\\d+)?)\\s*(?:metros?\\s*cuadrados|m(?:2|²|Â²))(?![\\p{L}\\d])";
     private static final String CONNECTING_WORDS = "(?:\\s+[\\p{L}]+){0,4}?\\s*[:=]?\\s*";
     private static final Pattern LOT_AREA_PATTERN = Pattern.compile(
             "\\b(?:lote|predio|terreno|parcela)" + CONNECTING_WORDS + AREA_VALUE);
     private static final Pattern OCCUPIED_AREA_PATTERN = Pattern.compile(
-            "\\b(?:ocupar|ocupaci[oó]n|[aá]rea\\s+ocupada)" + CONNECTING_WORDS + AREA_VALUE, Pattern.UNICODE_CHARACTER_CLASS);
+            "\\b(?:ocupar|ocupaci[oó]n|[aá]rea\\s+ocupada)\\s*(?:(?:de|por|es|igual\\s+a)\\s*)?[:=]?\\s*" + AREA_VALUE, Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern FIRST_FLOOR_AREA_PATTERN = Pattern.compile(
-            AREA_VALUE + "\\s+en\\s+(?:el\\s+)?primer\\s+piso\\b");
+            AREA_VALUE + "\\s+(?:de\\s+)?(?:ocupaci[oó]n\\s+)?en\\s+(?:el\\s+)?primer piso\\b", Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern BUILT_AREA_PATTERN = Pattern.compile(
             "\\b(?:[aá]rea(?:\\s+total)?\\s+construida|construcci[oó]n\\s+total)" + CONNECTING_WORDS + AREA_VALUE, Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern TOTAL_AREA_PATTERN = Pattern.compile(

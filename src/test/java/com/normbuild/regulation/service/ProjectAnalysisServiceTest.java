@@ -83,4 +83,17 @@ class ProjectAnalysisServiceTest {
         assertThat(analysis.occupancyIndex()).isNull();
         assertThat(analysis.observations()).anyMatch(message -> message.contains("separadores ambiguos"));
     }
+
+    @Test
+    void extractsFirstFloorOccupationWhenAreaPrecedesItsLabel() {
+        ProjectAnalysisResponse analysis = service.analyze(
+                "Quiero construir una vivienda unifamiliar de dos pisos en un lote urbano de 180 m\u00b2, "
+                + "con 90 m\u00b2 de ocupaci\u00f3n en primer piso y 180 m\u00b2 construidos en total.");
+
+        assertThat(analysis.lotAreaSquareMeters()).isEqualTo(180.0);
+        assertThat(analysis.occupiedAreaSquareMeters()).isEqualTo(90.0);
+        assertThat(analysis.totalBuiltAreaSquareMeters()).isEqualTo(180.0);
+        assertThat(analysis.occupancyIndex()).isEqualByComparingTo("0.5");
+        assertThat(analysis.constructionIndex()).isEqualByComparingTo("1");
+    }
 }

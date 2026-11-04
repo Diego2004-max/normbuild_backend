@@ -54,7 +54,7 @@ class RegulatoryRagServiceTest {
                 new RegulatoryAnswerSanitizer());
         when(embeddingClient.createEmbedding(anyString())).thenReturn(List.of(0.2, 0.8));
         RegulatoryDocumentProjection document = source();
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt()))
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt()))
                 .thenReturn(List.of(document));
     }
 
@@ -68,7 +68,17 @@ class RegulatoryRagServiceTest {
         verify(embeddingClient).createEmbedding(retrievalQuery.capture());
         assertThat(retrievalQuery.getValue()).contains("vivienda residencial", "edificabilidad para predio individual",
                 "equipamientos");
-        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(2));
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(false), eq(2));
+    }
+
+    @Test
+    void includesVipRulesOnlyWhenTheCitizenExplicitlyAsksForVipHousing() {
+        when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la norma especial.");
+
+        service.answerComplianceQuestion(new ComplianceQueryRequest(
+                "Medell\u00edn", "Quiero construir vivienda VIP en un lote urbano." )).join();
+
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(true), eq(2));
     }
 
     @Test
@@ -98,7 +108,7 @@ class RegulatoryRagServiceTest {
 
     @Test
     void doesNotGenerateWithoutRetrievedSources() {
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt())).thenReturn(List.of());
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt())).thenReturn(List.of());
 
         ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
 
@@ -113,7 +123,7 @@ class RegulatoryRagServiceTest {
 
         assertThatThrownBy(() -> service.answerComplianceQuestion(request).join())
                 .isInstanceOf(CompletionException.class).hasCauseInstanceOf(AiProviderException.class);
-        verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt());
+        verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt());
         verify(llmClient, never()).generateChecklist(anyString());
     }
 
@@ -148,7 +158,7 @@ class RegulatoryRagServiceTest {
         String content = "Esta fuente contiene oraciones completas. ".repeat(30);
         RegulatoryDocumentProjection document = source();
         when(document.getContent()).thenReturn(content);
-        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyInt())).thenReturn(List.of(document));
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyInt())).thenReturn(List.of(document));
         when(llmClient.generateChecklist(anyString())).thenReturn("Revisión terminada.");
 
         ComplianceChecklistResponse first = service.answerComplianceQuestion(request).join();
