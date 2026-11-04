@@ -59,6 +59,7 @@ services:
       NORMBUILD_EMBEDDING_MODEL_NAME: nomic-embed-text
       NORMBUILD_LLM_TIMEOUT_SECONDS: ${NORMBUILD_LLM_TIMEOUT_SECONDS:-240}
       NORMBUILD_INGESTION_API_KEY: ${NORMBUILD_INGESTION_API_KEY:?Set NORMBUILD_INGESTION_API_KEY in .env.production}
+      BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
     depends_on:
       database:
         condition: service_healthy

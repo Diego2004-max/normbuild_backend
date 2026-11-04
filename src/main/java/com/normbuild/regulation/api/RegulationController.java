@@ -7,9 +7,12 @@ import com.normbuild.regulation.dto.DocumentIngestionResponse;
 import com.normbuild.regulation.dto.PdfDocumentIngestionRequest;
 import com.normbuild.regulation.dto.PdfDocumentIngestionResponse;
 import com.normbuild.regulation.dto.JurisdictionCoverageResponse;
+import com.normbuild.regulation.dto.OfficialSourceSearchRequest;
+import com.normbuild.regulation.dto.OfficialSourceSearchResponse;
 import com.normbuild.regulation.repository.RegulatoryDocumentJdbcRepository;
 import com.normbuild.regulation.service.RegulatoryRagService;
 import com.normbuild.regulation.service.RegulatoryPdfIngestionService;
+import com.normbuild.regulation.service.OfficialSourceDiscoveryService;
 import jakarta.validation.Valid;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,21 +47,30 @@ public class RegulationController {
     private final RegulatoryPdfIngestionService pdfIngestionService;
     private final String ingestionApiKey;
     private final RegulatoryDocumentJdbcRepository documentRepository;
+    private final OfficialSourceDiscoveryService sourceDiscoveryService;
 
     public RegulationController(
             RegulatoryRagService ragService,
             RegulatoryPdfIngestionService pdfIngestionService,
             RegulatoryDocumentJdbcRepository documentRepository,
+            OfficialSourceDiscoveryService sourceDiscoveryService,
             @Value("${normbuild.security.ingestion-api-key:}") String ingestionApiKey) {
         this.ragService = ragService;
         this.pdfIngestionService = pdfIngestionService;
         this.documentRepository = documentRepository;
+        this.sourceDiscoveryService = sourceDiscoveryService;
         this.ingestionApiKey = ingestionApiKey;
     }
 
     @GetMapping("/coverage")
     public List<JurisdictionCoverageResponse> getCoverage() {
         return documentRepository.findJurisdictionCoverage();
+    }
+
+    @PostMapping("/sources/search")
+    public CompletableFuture<OfficialSourceSearchResponse> searchOfficialSources(
+            @Valid @RequestBody OfficialSourceSearchRequest request) {
+        return sourceDiscoveryService.search(request);
     }
 
     @PostMapping("/compliance-checklist")

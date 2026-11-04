@@ -31,6 +31,8 @@ spring:
 normbuild:
   security:
     ingestion-api-key: ${NORMBUILD_INGESTION_API_KEY:}
+  search:
+    brave-api-key: ${BRAVE_SEARCH_API_KEY:}
   ai:
     embedding-dimensions: 768
     llm-endpoint: ${NORMBUILD_LLM_ENDPOINT:http://localhost:11435/api/generate}
