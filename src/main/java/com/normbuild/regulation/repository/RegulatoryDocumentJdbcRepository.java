@@ -58,7 +58,7 @@ public class RegulatoryDocumentJdbcRepository {
             return new JurisdictionCoverageResponse(result.getString("jurisdiction"), sections, sources, lastIndexedAt, status);
         });
         Map<String, JurisdictionCoverageResponse> coverage = new LinkedHashMap<>();
-        for (String jurisdiction : List.of("Bogotá D.C.", "Pasto", "Medellín", "Cali", "Bucaramanga", "Barranquilla", "Cartagena")) {
+        for (String jurisdiction : List.of("Bogotá D.C.", "Pasto", "Medellín", "Cali", "Bucaramanga", "Barranquilla", "Cartagena", "Colombia")) {
             coverage.put(jurisdiction, new JurisdictionCoverageResponse(jurisdiction, 0, 0, null, "NO_OFFICIAL_SOURCE"));
         }
         indexed.forEach(item -> coverage.put(item.jurisdiction(), item));

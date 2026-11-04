@@ -19,7 +19,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
                 content,
                 1 - (embedding <=> CAST(:embedding AS vector)) AS similarity
             FROM regulatory_documents
-            WHERE jurisdiction = :jurisdiction
+            WHERE jurisdiction IN (:jurisdiction, 'Colombia')
               AND 1 - (embedding <=> CAST(:embedding AS vector)) >= :threshold
             ORDER BY embedding <=> CAST(:embedding AS vector)
             LIMIT :limit

@@ -57,7 +57,7 @@ public class RegulatoryPdfIngestionService {
             String jurisdiction,
             String regulationCode,
             String sourceUrl) {
-        List<String> chunks = textChunker.chunk(text);
+        List<RegulatoryTextChunker.RegulatoryChunk> chunks = textChunker.chunkWithReferences(text);
         if (chunks.isEmpty()) {
             throw new IllegalArgumentException("El documento no contiene texto para indexar.");
         }
@@ -68,9 +68,9 @@ public class RegulatoryPdfIngestionService {
             indexed = indexed.thenCompose(count -> {
                 List<CompletableFuture<DocumentIngestionResponse>> batch = new ArrayList<>();
                 for (int chunkIndex = start; chunkIndex < end; chunkIndex++) {
-                    String articleReference = "Sección " + (chunkIndex + 1) + " de " + chunks.size();
+                    RegulatoryTextChunker.RegulatoryChunk chunk = chunks.get(chunkIndex);
                     batch.add(ragService.ingestDocument(new DocumentIngestionRequest(
-                            title, jurisdiction, regulationCode, articleReference, sourceUrl, chunks.get(chunkIndex))));
+                            title, jurisdiction, regulationCode, chunk.articleReference(), sourceUrl, chunk.content())));
                 }
                 return CompletableFuture.allOf(batch.toArray(CompletableFuture[]::new))
                         .thenApply(ignored -> count + (int) batch.stream()
