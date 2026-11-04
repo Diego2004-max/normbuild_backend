@@ -1,7 +1,8 @@
 param(
     [string]$EnvironmentFile = (Join-Path $PSScriptRoot '..\.env.production'),
     [switch]$VerifyRunningStack,
-    [switch]$RequireSevenCityCoverage
+    [switch]$RequireSevenCityCoverage,
+    [switch]$RequireMunicipalDiscovery
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,6 +31,9 @@ foreach ($name in @('DATABASE_PASSWORD', 'NORMBUILD_INGESTION_API_KEY')) {
 if ($settings['DATABASE_PASSWORD'] -and $settings['NORMBUILD_INGESTION_API_KEY'] -and
     $settings['DATABASE_PASSWORD'] -ceq $settings['NORMBUILD_INGESTION_API_KEY']) {
     $errors.Add('Database and ingestion secrets must be different.')
+}
+if ($RequireMunicipalDiscovery -and [string]::IsNullOrWhiteSpace($settings['BRAVE_SEARCH_API_KEY'])) {
+    $errors.Add('BRAVE_SEARCH_API_KEY is required when municipal source discovery is enabled.')
 }
 
 $docker = Get-Command docker -ErrorAction SilentlyContinue

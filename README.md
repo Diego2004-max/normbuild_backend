@@ -89,7 +89,7 @@ messages are Spanish; identifiers, comments and commit messages are English.
 Copy .env.production.example to .env.production, set distinct strong secrets,
 then verify configuration before startup:
 
-    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production
+    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production -RequireMunicipalDiscovery
 
 After the backend stack is running, check API health, PostgreSQL/pgvector and
 both Ollama models:
