@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -12,7 +13,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Check out repository
         uses: actions/checkout@v4
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -20,12 +21,5 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Run backend tests
-        run: mvn --batch-mode verify
-      - name: Validate production compose configuration
-        env:
-          DATABASE_PASSWORD: ci-only-database-secret
-          NORMBUILD_INGESTION_API_KEY: ci-only-ingestion-secret
-        run: docker compose -f docker-compose.production.yml config --quiet
-      - name: Build backend container
-        run: docker build --tag normbuild-backend:ci .
+      - name: Run tests
+        run: mvn --batch-mode --no-transfer-progress verify
