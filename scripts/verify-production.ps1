@@ -1,7 +1,7 @@
 param(
     [string]$EnvironmentFile = (Join-Path $PSScriptRoot '..\.env.production'),
     [switch]$VerifyRunningStack,
-    [switch]$RequireSevenCityCoverage,
+    [Alias('RequireSevenCityCoverage')][switch]$RequireFiveCityCoverage,
     [switch]$RequireMunicipalDiscovery
 )
 
@@ -82,10 +82,10 @@ if ($VerifyRunningStack -and $docker) {
         $errors.Add('Ollama must have both llama3.1 and nomic-embed-text downloaded.')
     }
 
-    if ($RequireSevenCityCoverage) {
+    if ($RequireFiveCityCoverage) {
         try {
             $coverage = Invoke-RestMethod -Uri "$apiBase/api/regulations/coverage" -TimeoutSec 15
-            $requiredCities = @('Bogot' + [char]0x00E1 + ' D.C.', 'Pasto', 'Medell' + [char]0x00ED + 'n', 'Cali', 'Bucaramanga', 'Barranquilla', 'Cartagena')
+            $requiredCities = @('Bogot' + [char]0x00E1 + ' D.C.', 'Pasto', 'Medell' + [char]0x00ED + 'n', 'Cali', 'Bucaramanga')
             foreach ($city in $requiredCities) {
                 $cityCoverage = $coverage | Where-Object { $_.jurisdiction -ceq $city } | Select-Object -First 1
                 if (-not $cityCoverage -or $cityCoverage.officialSources -lt 1 -or $cityCoverage.indexedSections -lt 1) {
@@ -93,7 +93,7 @@ if ($VerifyRunningStack -and $docker) {
                 }
             }
         } catch {
-            $errors.Add('Could not verify seven-city indexed coverage from the backend API.')
+            $errors.Add('Could not verify five-city indexed coverage from the backend API.')
         }
     }
 }
@@ -110,6 +110,6 @@ Write-Output 'Production preflight passed.'
 if (-not $VerifyRunningStack) {
     Write-Output 'Runtime health, pgvector, Ollama models and corpus coverage were not checked. Use -VerifyRunningStack after startup.'
 }
-if ($VerifyRunningStack -and -not $RequireSevenCityCoverage) {
-    Write-Output 'Seven-city indexed source coverage was not required. Use -RequireSevenCityCoverage after legal review and ingestion.'
+if ($VerifyRunningStack -and -not $RequireFiveCityCoverage) {
+    Write-Output 'Five-city indexed source coverage was not required. Use -RequireFiveCityCoverage after legal review and ingestion.'
 }

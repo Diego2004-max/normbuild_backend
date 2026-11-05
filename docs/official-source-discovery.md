@@ -28,6 +28,20 @@ It targets Colombia and Spanish, returns at most eight distinct results, and
 labels each result `REQUIRES_LEGAL_REVIEW`. Search snippets and official domain
 checks do not establish whether an act remains in force or applies to a parcel.
 
+## Automatic research for an unindexed municipality
+
+The five base cities remain available in the jurisdiction field: Bogotá D.C.,
+Pasto, Medellín, Cali and Bucaramanga. A citizen can type another Colombian
+municipality directly. When the selected city has no indexed local context, the
+checklist pipeline requests Brave LLM Context with the city name and generic
+urban-planning terms only; the project description is not sent to Brave. The
+backend keeps HTTPS `.gov.co` results, passes their extracted snippets to the
+local `llama3.1` model, and marks the answer as `WEB_RESEARCH` with citations
+labelled **Fuente web por verificar**. These results are temporary evidence for
+that response; they are not indexed as law and do not establish legal validity,
+parcel applicability or current status. If no suitable official extracts are
+found, the service returns no-context instead of inventing an answer.
+
 ## Review and index an official source
 
 1. Open each official result and verify the issuing authority, adoption and

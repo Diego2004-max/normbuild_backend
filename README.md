@@ -46,9 +46,9 @@ Back up `normbuild-production-postgres` and protect `.env.production`; do not
 commit production secrets.
 
 See [deployment prerequisites and verification](docs/deployment.md) before
-opening the application to the internet. A deployment is not complete until
-the health checks pass, the seven cities' current source sets are imported, and
-a real cited request has been verified against that corpus.
+opening the application to the internet. Verify the five base cities' indexed
+corpus where available and confirm that live official-source research is enabled
+for any municipality without local documents.
 
 The API does not seed paraphrased municipal rules. Only source documents that have
 been reviewed and ingested are eligible for retrieval and citation. Document
@@ -59,11 +59,12 @@ URL on an official `.gov.co` host, and is disabled until
 ## AI request flow
 
 The API extracts project measurements, computes proposed occupancy and construction
-indices, creates an embedding with Ollama, performs jurisdiction-scoped cosine
-search in PostgreSQL/pgvector, and supplies retrieved source text to the local LLM.
-The SSE endpoint emits analysis progress and complete source references while the
-LLM generates its response. Missing municipal documents return an explicit
-no-context result.
+indices, creates an embedding with Ollama, and performs jurisdiction-scoped cosine
+search in PostgreSQL/pgvector. If no local municipal source is indexed, it searches
+Brave LLM Context using only the city name and generic urban-planning terms, keeps
+HTTPS `.gov.co` results, and asks the local LLM to draft a preliminary answer from
+those extracts. The project description is not sent to Brave. Live-web citations
+are visibly marked as unverified and are not added to the vector database.
 
 ## API
 
@@ -74,7 +75,7 @@ no-context result.
 - `GET /actuator/health`: service health.
 - `GET /api/regulations/coverage`: actual indexed official source counts by city.
 - `POST /api/regulations/sources/search`: discover live Colombian official POT candidates using `BRAVE_SEARCH_API_KEY`.
-- `POST /api/regulations/documents/pdf/from-official-url`: protected download, review-confirmed PDF parsing and vector indexing.
+- `POST /api/regulations/documents/from-official-url`: protected download, review-confirmed PDF/HTML parsing and vector indexing.
 
 For the new-city discovery, provider setup and human review workflow, see
 [`docs/official-source-discovery.md`](docs/official-source-discovery.md).
@@ -99,10 +100,10 @@ both Ollama models:
 
     .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production -VerifyRunningStack
 
-After reviewing and importing current official sources, require all seven
-municipalities to have indexed source sections:
+After reviewing and importing current official sources, require the five base
+cities to have indexed source sections:
 
-    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production -VerifyRunningStack -RequireSevenCityCoverage
+    .\scripts\verify-production.ps1 -EnvironmentFile .\.env.production -VerifyRunningStack -RequireFiveCityCoverage
 
 The coverage check verifies indexed source counts. It does not certify legal
 currency, amendment completeness or parcel-level applicability.

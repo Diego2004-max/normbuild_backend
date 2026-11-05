@@ -45,9 +45,11 @@ requirements as sourced.
 
 ## Coverage policy
 
-This initial register covers seven prioritized cities only. It does not claim
-complete municipal coverage, complete amendments, parcel-level applicability,
-or legal advice. RAG citations must point to the exact official source URL that
+The five base city choices are Bogotá, Pasto, Medellín, Cali and Bucaramanga.
+Barranquilla, Cartagena and other Colombian municipalities can be researched on
+demand through live official-source search. This register does not claim complete
+municipal coverage, complete amendments, parcel-level applicability, or legal
+advice. RAG citations must point to the exact official source URL that
 was ingested. Jurisdiction aliases are canonicalized at query and ingestion
 time so accents and common city-name variants do not split the same corpus.
 
