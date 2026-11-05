@@ -28,19 +28,22 @@ It targets Colombia and Spanish, returns at most eight distinct results, and
 labels each result `REQUIRES_LEGAL_REVIEW`. Search snippets and official domain
 checks do not establish whether an act remains in force or applies to a parcel.
 
-## Review and index a PDF
+## Review and index an official source
 
 1. Open each official result and verify the issuing authority, adoption and
    publication, effective status, later amendments, judicial orders, annexes,
    and applicable jurisdiction. Check parcel maps separately where needed.
-2. In the page, select **Revisar e incorporar PDF**, enter the exact act name,
+2. In the page, select **Revisar e incorporar fuente**, enter the exact act name,
    the legal code (for example, an agreement or decree), and the administrative
    ingestion key. Confirm the legal review only after completing step 1.
-3. The backend re-fetches the URL itself. It accepts HTTPS `.gov.co` hosts,
-   rejects redirects and non-PDF content, caps the file at 40 MB, and requires
-   selectable text. Scanned documents need reviewed OCR before they can be
-   imported.
-4. The backend extracts text, splits it into referenced sections, generates
+3. The backend re-fetches the URL itself. It accepts HTTPS `.gov.co` hosts and
+   supports selectable-text PDFs up to 40 MB or HTML/XHTML pages up to 10 MB.
+   Scanned PDFs need reviewed OCR before they can be imported. Navigation,
+   scripts, styles, headers and footers are removed from HTML before indexing.
+4. The endpoint is `POST /api/regulations/documents/from-official-url`; the
+   former `/documents/pdf/from-official-url` route remains available for clients
+   that have not yet migrated.
+5. The backend extracts text, splits it into referenced sections, generates
    embeddings with `nomic-embed-text`, and stores sections and the official URL
    in PostgreSQL/pgvector. The jurisdiction becomes visible in the live
    coverage endpoint after indexing.

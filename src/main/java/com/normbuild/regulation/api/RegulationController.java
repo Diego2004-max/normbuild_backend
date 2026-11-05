@@ -78,9 +78,9 @@ public class RegulationController {
         return sourceDiscoveryService.search(request);
     }
 
-    @PostMapping("/documents/pdf/from-official-url")
+    @PostMapping({"/documents/from-official-url", "/documents/pdf/from-official-url"})
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public CompletableFuture<PdfDocumentIngestionResponse> importReviewedOfficialPdf(
+    public CompletableFuture<PdfDocumentIngestionResponse> importReviewedOfficialSource(
             @Valid @RequestBody OfficialSourceImportRequest request,
             @RequestHeader(value = "X-NormBuild-Ingestion-Key", required = false) String providedKey) {
         authorizeIngestion(providedKey);

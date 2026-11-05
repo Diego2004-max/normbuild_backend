@@ -12,14 +12,14 @@ class OfficialPdfSourceImportServiceTest {
 
     @Test
     void acceptsOnlySecureColombianGovernmentUrls() {
-        assertThat(OfficialPdfSourceImportService.validateOfficialPdfUrl(
+        assertThat(OfficialPdfSourceImportService.validateOfficialSourceUrl(
                 "https://planeacion.municipio.gov.co/pot.pdf").getHost())
                 .isEqualTo("planeacion.municipio.gov.co");
-        assertThatThrownBy(() -> OfficialPdfSourceImportService.validateOfficialPdfUrl(
+        assertThatThrownBy(() -> OfficialPdfSourceImportService.validateOfficialSourceUrl(
                 "http://municipio.gov.co/pot.pdf")).isInstanceOf(ResponseStatusException.class);
-        assertThatThrownBy(() -> OfficialPdfSourceImportService.validateOfficialPdfUrl(
+        assertThatThrownBy(() -> OfficialPdfSourceImportService.validateOfficialSourceUrl(
                 "https://example.com/pot.pdf")).isInstanceOf(ResponseStatusException.class);
-        assertThatThrownBy(() -> OfficialPdfSourceImportService.validateOfficialPdfUrl(
+        assertThatThrownBy(() -> OfficialPdfSourceImportService.validateOfficialSourceUrl(
                 "https://user@municipio.gov.co/pot.pdf")).isInstanceOf(ResponseStatusException.class);
     }
 
