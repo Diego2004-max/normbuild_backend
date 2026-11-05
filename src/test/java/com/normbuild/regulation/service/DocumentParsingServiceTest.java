@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -42,5 +43,19 @@ class DocumentParsingServiceTest {
         String text = documentParsingService.extractPdfTextAsync(pdfBytes).join();
 
         assertThat(text).contains("Official planning regulation", "complete provisions");
+    }
+
+    @Test
+    void extractsVisibleHtmlTextAndExcludesNavigationAndScripts() {
+        String html = "<html><head><title>Hidden title</title></head><body>"
+                + "<nav>Navigation must not be indexed</nav><main><h1>Plan oficial de ordenamiento territorial</h1>"
+                + "<p>Este contenido normativo oficial establece condiciones urbanísticas para los predios del municipio.</p>"
+                + "<script>secretToken()</script></main></body></html>";
+
+        String text = documentParsingService.extractHtmlTextAsync(
+                html.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8).join();
+
+        assertThat(text).contains("Plan oficial", "condiciones urbanísticas")
+                .doesNotContain("Navigation must not be indexed", "secretToken", "Hidden title");
     }
 }

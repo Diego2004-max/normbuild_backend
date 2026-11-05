@@ -6,6 +6,8 @@ import com.normbuild.regulation.dto.PdfDocumentIngestionResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,8 +50,26 @@ public class RegulatoryPdfIngestionService {
         }
         UUID sourceDocumentId = UUID.randomUUID();
         return documentParsingService.extractPdfTextAsync(pdfBytes)
-                .thenCompose(text -> indexChunks(text, title, jurisdiction, regulationCode, sourceUrl)
-                        .thenApply(count -> new PdfDocumentIngestionResponse(sourceDocumentId, count, "INDEXED")));
+                .thenCompose(text -> indexExtractedText(text, title, jurisdiction, regulationCode, sourceUrl, sourceDocumentId));
+    }
+
+    public CompletableFuture<PdfDocumentIngestionResponse> ingestHtml(
+            byte[] htmlBytes,
+            Charset charset,
+            String title,
+            String jurisdiction,
+            String regulationCode,
+            String sourceUrl) {
+        UUID sourceDocumentId = UUID.randomUUID();
+        return documentParsingService.extractHtmlTextAsync(htmlBytes,
+                        charset == null ? StandardCharsets.UTF_8 : charset)
+                .thenCompose(text -> indexExtractedText(text, title, jurisdiction, regulationCode, sourceUrl, sourceDocumentId));
+    }
+
+    private CompletableFuture<PdfDocumentIngestionResponse> indexExtractedText(
+            String text, String title, String jurisdiction, String regulationCode, String sourceUrl, UUID sourceDocumentId) {
+        return indexChunks(text, title, jurisdiction, regulationCode, sourceUrl)
+                .thenApply(count -> new PdfDocumentIngestionResponse(sourceDocumentId, count, "INDEXED"));
     }
 
     private byte[] readBytes(MultipartFile file) {
