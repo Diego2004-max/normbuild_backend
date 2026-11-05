@@ -12,6 +12,7 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
     @Query(value = """
             SELECT
                 id,
+                jurisdiction,
                 title,
                 regulation_code AS regulationCode,
                 article_reference AS articleReference,

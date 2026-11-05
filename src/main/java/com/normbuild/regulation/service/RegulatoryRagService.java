@@ -44,6 +44,7 @@ public class RegulatoryRagService {
     private final Executor ragTaskExecutor;
     private final ProjectAnalysisService projectAnalysisService;
     private final RegulatoryAnswerSanitizer answerSanitizer;
+    private final RegulatoryWebResearchService webResearchService;
     private final AtomicLong knowledgeVersion = new AtomicLong();
     private final Cache<QueryCacheKey, ComplianceChecklistResponse> responseCache = Caffeine.newBuilder()
             .maximumSize(100).expireAfterWrite(Duration.ofMinutes(5)).build();
@@ -59,7 +60,8 @@ public class RegulatoryRagService {
             RegulatoryDocumentJdbcRepository jdbcRepository,
             @Qualifier("ragTaskExecutor") Executor ragTaskExecutor,
             ProjectAnalysisService projectAnalysisService,
-            RegulatoryAnswerSanitizer answerSanitizer
+            RegulatoryAnswerSanitizer answerSanitizer,
+            RegulatoryWebResearchService webResearchService
     ) {
         this.properties = properties;
         this.embeddingClient = embeddingClient;
@@ -72,6 +74,7 @@ public class RegulatoryRagService {
         this.ragTaskExecutor = ragTaskExecutor;
         this.projectAnalysisService = projectAnalysisService;
         this.answerSanitizer = answerSanitizer;
+        this.webResearchService = webResearchService;
     }
 
     public CompletableFuture<ComplianceChecklistResponse> answerComplianceQuestion(ComplianceQueryRequest request) {
@@ -110,6 +113,13 @@ public class RegulatoryRagService {
             );
         }, ragTaskExecutor);
         return contextFuture.thenApplyAsync(context -> {
+            String requestedJurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
+            boolean hasLocalMunicipalContext = context.stream().anyMatch(document -> document.getJurisdiction() != null
+                    && requestedJurisdiction.equals(JurisdictionNormalizer.canonicalize(document.getJurisdiction())));
+            if (!hasLocalMunicipalContext && !requestedJurisdiction.equals("Colombia")) {
+                return new ComplianceChecklistResponse("", "Por verificar", List.of(), OffsetDateTime.now(),
+                        ChecklistGenerationMode.NEEDS_WEB_RESEARCH, analysis);
+            }
             if (context.isEmpty()) {
                 return new ComplianceChecklistResponse(
                         "No encontré normativa oficial suficiente para responder con seguridad. Carga documentos oficiales de la jurisdicción indicada antes de emitir un concepto.",
@@ -140,7 +150,12 @@ public class RegulatoryRagService {
                         analysis
                 );
             }
-        }, ragTaskExecutor);
+        }, ragTaskExecutor).thenCompose(response -> {
+            if (response.generationMode() != ChecklistGenerationMode.NEEDS_WEB_RESEARCH) {
+                return CompletableFuture.completedFuture(response);
+            }
+            return webResearchService.research(request, onProgress);
+        });
     }
 
     @Transactional

@@ -6,6 +6,8 @@ public interface RegulatoryDocumentProjection {
 
     UUID getId();
 
+    String getJurisdiction();
+
     String getTitle();
 
     String getRegulationCode();

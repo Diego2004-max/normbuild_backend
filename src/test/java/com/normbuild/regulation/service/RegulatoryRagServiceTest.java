@@ -27,6 +27,8 @@ import com.normbuild.regulation.repository.RegulatoryDocumentRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletableFuture;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +39,7 @@ class RegulatoryRagServiceTest {
     private final RegulatoryDocumentRepository repository = mock(RegulatoryDocumentRepository.class);
     private final RegulatoryDocumentJdbcRepository jdbcRepository = mock(RegulatoryDocumentJdbcRepository.class);
     private final DocumentParsingService parsingService = mock(DocumentParsingService.class);
+    private final RegulatoryWebResearchService webResearchService = mock(RegulatoryWebResearchService.class);
     private final ComplianceQueryRequest request = new ComplianceQueryRequest(
             "Bogotá D.C.", "Casa de dos pisos con altura total de 7.5 metros en un lote de 180 m².");
     private RegulatoryRagService service;
@@ -51,11 +54,17 @@ class RegulatoryRagServiceTest {
                 parsingService, repository,
                 jdbcRepository, Runnable::run,
                 new ProjectAnalysisService(new ProjectFactExtractor()),
-                new RegulatoryAnswerSanitizer());
+                new RegulatoryAnswerSanitizer(), webResearchService);
         when(embeddingClient.createEmbedding(anyString())).thenReturn(List.of(0.2, 0.8));
-        RegulatoryDocumentProjection document = source();
         when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt()))
-                .thenReturn(List.of(document));
+                .thenAnswer(invocation -> {
+                    RegulatoryDocumentProjection document = source();
+                    when(document.getJurisdiction()).thenReturn(invocation.getArgument(0));
+                    return List.of(document);
+                });
+        when(webResearchService.research(any(), any())).thenReturn(CompletableFuture.completedFuture(
+                new ComplianceChecklistResponse("Sin contexto", "Por verificar", List.of(), OffsetDateTime.now(),
+                        ChecklistGenerationMode.NO_CONTEXT, null)));
     }
 
     @Test
@@ -93,6 +102,24 @@ class RegulatoryRagServiceTest {
                 "Medell\u00edn", "Quiero construir vivienda VIP en un lote urbano." )).join();
 
         verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(true), eq(false), eq(2));
+    }
+
+    @Test
+    void usesLiveWebResearchWhenOnlyNationalAndNoMunicipalContextIsIndexed() {
+        RegulatoryDocumentProjection nationalSource = source();
+        when(nationalSource.getJurisdiction()).thenReturn("Colombia");
+        when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt()))
+                .thenReturn(List.of(nationalSource));
+        ComplianceChecklistResponse webResponse = new ComplianceChecklistResponse("Orientación web", "Por verificar",
+                List.of(), OffsetDateTime.now(), ChecklistGenerationMode.WEB_RESEARCH, null);
+        when(webResearchService.research(eq(request), any())).thenReturn(CompletableFuture.completedFuture(webResponse));
+
+        ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
+
+        assertThat(response.generationMode()).isEqualTo(ChecklistGenerationMode.WEB_RESEARCH);
+        assertThat(response.answer()).isEqualTo("Orientación web");
+        verify(webResearchService).research(eq(request), any());
+        verify(llmClient, never()).generateChecklist(anyString());
     }
 
     @Test
@@ -144,6 +171,7 @@ class RegulatoryRagServiceTest {
     private RegulatoryDocumentProjection source() {
         RegulatoryDocumentProjection source = mock(RegulatoryDocumentProjection.class);
         when(source.getId()).thenReturn(UUID.fromString("b6180b28-0944-4e94-a612-dbd0b56c04db"));
+        when(source.getJurisdiction()).thenReturn("Bogotá D.C.");
         when(source.getTitle()).thenReturn("Documento de prueba");
         when(source.getRegulationCode()).thenReturn("Reglamento de prueba");
         when(source.getArticleReference()).thenReturn("Referencia de prueba");
