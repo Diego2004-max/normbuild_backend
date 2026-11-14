@@ -27,9 +27,9 @@ services:
       - key: BRAVE_SEARCH_API_KEY
         value: ""
       - key: NORMBUILD_LLM_ENDPOINT
-        sync: false
+        value: http://127.0.0.1:11435/api/generate
       - key: NORMBUILD_EMBEDDING_ENDPOINT
-        sync: false
+        value: http://127.0.0.1:11435/api/embeddings
       - key: NORMBUILD_MODEL_NAME
         value: llama3.1
       - key: NORMBUILD_EMBEDDING_MODEL_NAME
