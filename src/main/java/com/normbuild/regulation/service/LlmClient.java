@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ public class LlmClient {
 
     private final WebClient webClient;
     private final NormBuildAiProperties properties;
+    @Value("${NORMBUILD_OLLAMA_TOKEN:}")
+    private String ollamaToken = "";
 
     public LlmClient(WebClient.Builder webClientBuilder, NormBuildAiProperties properties) {
         this.webClient = webClientBuilder.build();
@@ -40,6 +43,7 @@ public class LlmClient {
         );
         Map<String, Object> response = webClient.post()
                 .uri(properties.llmEndpoint())
+                .headers(headers -> { if (!ollamaToken.isBlank()) headers.setBearerAuth(ollamaToken); })
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
