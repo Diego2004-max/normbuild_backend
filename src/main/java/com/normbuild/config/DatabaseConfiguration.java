@@ -1,6 +1,8 @@
 package com.normbuild.config;
 
 import javax.sql.DataSource;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -26,11 +28,30 @@ public class DatabaseConfiguration {
             return url;
         }
         if (url.startsWith("postgres://")) {
-            return "jdbc:postgresql://" + url.substring("postgres://".length());
+            return normalizeRenderPostgresUrl(url);
         }
         if (url.startsWith("postgresql://")) {
-            return "jdbc:postgresql://" + url.substring("postgresql://".length());
+            return normalizeRenderPostgresUrl(url);
         }
         throw new IllegalArgumentException("DATABASE_URL must use jdbc:postgresql:// or postgresql://");
+    }
+
+    private String normalizeRenderPostgresUrl(String url) {
+        try {
+            URI parsed = new URI(url);
+            StringBuilder jdbcUrl = new StringBuilder("jdbc:postgresql://").append(parsed.getHost());
+            if (parsed.getPort() >= 0) {
+                jdbcUrl.append(':').append(parsed.getPort());
+            }
+            if (parsed.getRawPath() != null) {
+                jdbcUrl.append(parsed.getRawPath());
+            }
+            if (parsed.getRawQuery() != null) {
+                jdbcUrl.append('?').append(parsed.getRawQuery());
+            }
+            return jdbcUrl.toString();
+        } catch (URISyntaxException exception) {
+            throw new IllegalArgumentException("DATABASE_URL is not a valid PostgreSQL URL", exception);
+        }
     }
 }
