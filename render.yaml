@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: normbuild-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: normbuild-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: normbuild-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: normbuild-db
+          property: password
+      - key: NORMBUILD_ALLOWED_ORIGINS
+        value: https://normbuild-frontend.vercel.app
+      - key: NORMBUILD_INGESTION_API_KEY
+        sync: false
+      - key: BRAVE_SEARCH_API_KEY
+        sync: false
+      - key: NORMBUILD_LLM_ENDPOINT
+        sync: false
+      - key: NORMBUILD_EMBEDDING_ENDPOINT
+        sync: false
+      - key: NORMBUILD_MODEL_NAME
+        value: llama3.1
+      - key: NORMBUILD_EMBEDDING_MODEL_NAME
+        value: nomic-embed-text
+      - key: NORMBUILD_LLM_TIMEOUT_SECONDS
+        value: "240"
+
+databases:
+  - name: normbuild-db
+    plan: free
+    databaseName: normbuild
+    user: normbuild
+    postgresMajorVersion: "16"
