@@ -2,6 +2,7 @@ package com.normbuild.regulation.service;
 
 import com.normbuild.regulation.dto.ProjectAnalysisResponse;
 import com.normbuild.regulation.dto.CitedRegulationResponse;
+import com.normbuild.regulation.dto.CitationSourceType;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RegulatoryAnswerSanitizer {
+
+    private static final Pattern ARTICLE_NUMBER = Pattern.compile("(?iu)(?:art[ií]culo|art[.]?|aislamientos?|retrocesos?)[^\\n:]{0,55}:?\\s*(\\d{2,4})\\b");
 
     private static final Pattern UNSUPPORTED_PARCEL_CLASSIFICATION = Pattern.compile(
             "(?iu)\\b(?:zona|nivel)\\s*\\d+|\\bpol.gono\\s+[A-Z0-9_-]*\\d[A-Z0-9_-]*");
@@ -35,7 +38,10 @@ public class RegulatoryAnswerSanitizer {
         List<String> safeLines = new ArrayList<>();
         for (String line : generatedAnswer.lines().toList()) {
             boolean unsupportedClassification = hasUnprovidedParcelClassification(line, projectDescription);
+            boolean unsupportedWebArticle = citations.stream().anyMatch(citation -> citation.sourceType() == CitationSourceType.LIVE_WEB)
+                    && hasUnverifiedArticleNumber(line, citations);
             if (!UNSUPPORTED_NUMERIC_LIMIT.matcher(line).find()
+                    && !unsupportedWebArticle
                     && !UNSUPPORTED_MISSING_PROJECT_INDICES.matcher(line).find()
                     && !MODEL_ARTICLE_SELECTION_CLAIM.matcher(line).find()
                     && !MODEL_TRUNCATION_NOTICE.matcher(line).find()
@@ -72,6 +78,17 @@ public class RegulatoryAnswerSanitizer {
         }
         sections.add(conclusion);
         return String.join("\n\n", sections);
+    }
+
+    private boolean hasUnverifiedArticleNumber(String line, List<CitedRegulationResponse> citations) {
+        Matcher matcher = ARTICLE_NUMBER.matcher(line);
+        while (matcher.find()) {
+            String number = matcher.group(1);
+            boolean supported = citations.stream().anyMatch(citation -> citation.excerpt() != null
+                    && Pattern.compile("(?iu)\\bart[ií]culo\\s+" + number + "\\b").matcher(citation.excerpt()).find());
+            if (!supported) return true;
+        }
+        return false;
     }
 
     private boolean hasUnprovidedParcelClassification(String line, String projectDescription) {
