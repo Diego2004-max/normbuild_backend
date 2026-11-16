@@ -11,6 +11,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeoutException;
@@ -100,11 +101,20 @@ public class LlmClient {
                         "model", hostedModel,
                         "messages", List.of(Map.of("role", "user", "content", prompt)),
                         "temperature", 0.1,
-                        "max_completion_tokens", Math.max(512, properties.llmMaxOutputTokens())))
+                        "max_completion_tokens", Math.max(1024, properties.llmMaxOutputTokens())))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .timeout(Duration.ofSeconds(Math.min(90, properties.llmTimeoutSeconds())))
-                .onErrorMap(error -> new AiProviderException("El proveedor de IA no pudo completar la respuesta.", error))
+                .onErrorMap(error -> {
+                    if (error instanceof WebClientResponseException responseError) {
+                        LOGGER.warn("Hosted LLM rejected request: status={}, model={}",
+                                responseError.getStatusCode().value(), hostedModel);
+                    } else {
+                        LOGGER.warn("Hosted LLM connection failed: errorType={}, model={}",
+                                error.getClass().getSimpleName(), hostedModel);
+                    }
+                    return new AiProviderException("El proveedor de IA no pudo completar la respuesta.", error);
+                })
                 .block();
         String answer = response == null ? "" : response.path("choices").path(0)
                 .path("message").path("content").asText("").strip();
