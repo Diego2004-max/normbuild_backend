@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RegulatoryWebResearchService {
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RegulatoryWebResearchService.class);
 
     private static final int MAX_CITATION_EXCERPT_LENGTH = 4500;
     private final BraveRegulatoryContextProvider contextProvider;
@@ -48,12 +49,15 @@ public class RegulatoryWebResearchService {
 
     public CompletableFuture<ComplianceChecklistResponse> research(
             ComplianceQueryRequest request, Consumer<ComplianceChecklistResponse> onProgress) {
+        String requestId = UUID.randomUUID().toString();
+        LOGGER.info("Web research started: requestId={}", requestId);
         ProjectAnalysisResponse analysis = projectAnalysisService.analyze(request.projectDescription());
         return contextProvider.search(request.jurisdiction())
                 .thenApplyAsync(documents -> {
                     List<CitedRegulationResponse> citations = documents.stream()
                             .map(this::toCitation)
                             .toList();
+                    LOGGER.info("Web research sources retrieved: requestId={}, sources={}", requestId, citations.size());
                     if (citations.isEmpty()) {
                         return new ComplianceChecklistResponse(
                                 "No encontré extractos suficientes en fuentes oficiales para esta ciudad. Verifica el nombre del municipio o consulta su Secretaría de Planeación.",
@@ -68,6 +72,14 @@ public class RegulatoryWebResearchService {
                         return new ComplianceChecklistResponse(answer, "Por verificar", citations,
                                 OffsetDateTime.now(), ChecklistGenerationMode.WEB_RESEARCH, analysis);
                     } catch (AiProviderException exception) {
+                        Throwable cause = exception;
+                        while (cause.getCause() != null && cause.getCause() != cause) {
+                            cause = cause.getCause();
+                        }
+                        Integer status = cause instanceof org.springframework.web.reactive.function.client.WebClientResponseException http
+                                ? http.getStatusCode().value() : null;
+                        LOGGER.warn("Web research generation failed: requestId={}, errorType={}, httpStatus={}, reason={}",
+                                requestId, cause.getClass().getSimpleName(), status, exception.getMessage());
                         return new ComplianceChecklistResponse(
                                 "La búsqueda encontró extractos en páginas oficiales, pero el modelo local no pudo redactar la orientación. Revisa las fuentes y vuelve a intentarlo.",
                                 "Por verificar", citations, OffsetDateTime.now(), ChecklistGenerationMode.UNAVAILABLE, analysis);
