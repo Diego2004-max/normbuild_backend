@@ -141,4 +141,14 @@ class RegulatoryAnswerSanitizerTest {
         assertThat(answer).doesNotContain("Ratios propuestos", "Área de lote:", "Verificación de índices urbanísticos", "información proporcionada no es suficiente");
         assertThat(answer).contains("huella construida del primer piso", "total de m² construidos");
     }
+
+    @Test
+    void omitsUnrequestedLicenseSubtypeFromHousingAnswer() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(null, null, null, null, null, null, List.of());
+        String answer = sanitizer.sanitize(
+                "Obtén la licencia de urbanización antes de construir.\nConsulta en la curaduría la licencia de construcción aplicable.",
+                analysis, List.of(), "Quiero construir una vivienda unifamiliar en mi lote.");
+        assertThat(answer).doesNotContain("licencia de urbanización");
+        assertThat(answer).contains("licencia de construcción");
+    }
 }

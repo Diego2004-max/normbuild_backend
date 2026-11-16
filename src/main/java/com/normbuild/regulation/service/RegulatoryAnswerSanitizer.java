@@ -36,6 +36,8 @@ public class RegulatoryAnswerSanitizer {
             "(?iu)\\b\\d+(?:[.,]\\d+)?\\s*(?:m(?:etros?)?|pisos?|%)\\b");
     private static final Pattern MAP_REFERENCE = Pattern.compile(
             "(?iu)\\b[A-Z]{1,3}[-\\u2010-\\u2015\\u2212]\\d+(?:[.]\\d+){1,5}(?:[-\\u2010-\\u2015\\u2212]\\d+)?\\b");
+    private static final Pattern UNREQUESTED_LICENSE_SUBTYPE = Pattern.compile(
+            "(?iu)licencia de (?:urbanizaci[oó]n|parcelaci[oó]n|subdivisi[oó]n)");
 
     public String sanitize(String generatedAnswer, ProjectAnalysisResponse analysis,
                           List<CitedRegulationResponse> citations, String projectDescription) {
@@ -45,9 +47,12 @@ public class RegulatoryAnswerSanitizer {
             boolean unsupportedWebArticle = citations.stream().anyMatch(citation -> citation.sourceType() == CitationSourceType.LIVE_WEB)
                     && hasUnverifiedArticleNumber(line, citations);
             boolean unsupportedMapReference = hasUnsupportedMapReference(line, citations);
+            boolean unrequestedLicenseSubtype = UNREQUESTED_LICENSE_SUBTYPE.matcher(line).find()
+                    && !UNREQUESTED_LICENSE_SUBTYPE.matcher(projectDescription).find();
             if (!UNSUPPORTED_NUMERIC_LIMIT.matcher(line).find()
                     && !NUMERIC_BUILDING_MEASUREMENT.matcher(line).find()
                     && !unsupportedMapReference
+                    && !unrequestedLicenseSubtype
                     && !unsupportedWebArticle
                     && !UNSUPPORTED_MISSING_PROJECT_INDICES.matcher(line).find()
                     && !MODEL_ARTICLE_SELECTION_CLAIM.matcher(line).find()
