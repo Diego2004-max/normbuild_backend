@@ -49,15 +49,26 @@ public class RegulatoryWebResearchService {
 
     public CompletableFuture<ComplianceChecklistResponse> research(
             ComplianceQueryRequest request, Consumer<ComplianceChecklistResponse> onProgress) {
+        return research(request, List.of(), onProgress);
+    }
+
+    public CompletableFuture<ComplianceChecklistResponse> research(
+            ComplianceQueryRequest request, List<CitedRegulationResponse> indexedCitations,
+            Consumer<ComplianceChecklistResponse> onProgress) {
         String requestId = UUID.randomUUID().toString();
         LOGGER.info("Web research started: requestId={}", requestId);
         ProjectAnalysisResponse analysis = projectAnalysisService.analyze(request.projectDescription());
         return contextProvider.search(request.jurisdiction())
                 .thenApplyAsync(documents -> {
-                    List<CitedRegulationResponse> citations = documents.stream()
+                    List<CitedRegulationResponse> liveCitations = documents.stream()
                             .map(this::toCitation)
                             .toList();
-                    LOGGER.info("Web research sources retrieved: requestId={}, sources={}", requestId, citations.size());
+                    List<CitedRegulationResponse> citations = new java.util.ArrayList<>(indexedCitations);
+                    liveCitations.stream().filter(live -> indexedCitations.stream()
+                            .noneMatch(indexed -> indexed.sourceUrl().equals(live.sourceUrl())))
+                            .limit(indexedCitations.isEmpty() ? 6 : 2).forEach(citations::add);
+                    LOGGER.info("Web research sources retrieved: requestId={}, indexed={}, live={}",
+                            requestId, indexedCitations.size(), liveCitations.size());
                     if (citations.isEmpty()) {
                         return new ComplianceChecklistResponse(
                                 "No encontré extractos suficientes en fuentes oficiales para esta ciudad. Verifica el nombre del municipio o consulta su Secretaría de Planeación.",

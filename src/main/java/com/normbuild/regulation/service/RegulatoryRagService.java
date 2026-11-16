@@ -122,7 +122,30 @@ public class RegulatoryRagService {
             }
             return officialFallback;
         }, ragTaskExecutor);
-        return contextFuture.thenApplyAsync(context -> {
+        return contextFuture.thenCompose(context -> {
+            List<CitedRegulationResponse> indexedCitations = mapCitations(context);
+            String requestedJurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
+            boolean hasMunicipalContext = context.stream().anyMatch(document ->
+                    requestedJurisdiction.equals(JurisdictionNormalizer.canonicalize(document.getJurisdiction())));
+            if (!hasMunicipalContext && !requestedJurisdiction.equals("Colombia")) {
+                return webResearchService.research(request, onProgress);
+            }
+            return webResearchService.research(request, indexedCitations, onProgress)
+                    .handle((liveResponse, failure) -> {
+                        if (failure == null && liveResponse.generationMode() == ChecklistGenerationMode.WEB_RESEARCH) {
+                            return liveResponse;
+                        }
+                        LOGGER.warn("Live research unavailable; using indexed regulations for {}",
+                                JurisdictionNormalizer.canonicalize(request.jurisdiction()));
+                        return generateFromIndexedContext(request, analysis, context, cacheKey, onProgress);
+                    });
+        });
+    }
+
+    private ComplianceChecklistResponse generateFromIndexedContext(
+            ComplianceQueryRequest request, ProjectAnalysisResponse analysis,
+            List<RegulatoryDocumentProjection> context, QueryCacheKey cacheKey,
+            Consumer<ComplianceChecklistResponse> onProgress) {
             String requestedJurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
             boolean hasLocalMunicipalContext = context.stream().anyMatch(document -> document.getJurisdiction() != null
                     && requestedJurisdiction.equals(JurisdictionNormalizer.canonicalize(document.getJurisdiction())));
@@ -160,12 +183,6 @@ public class RegulatoryRagService {
                         analysis
                 );
             }
-        }, ragTaskExecutor).thenCompose(response -> {
-            if (response.generationMode() != ChecklistGenerationMode.NEEDS_WEB_RESEARCH) {
-                return CompletableFuture.completedFuture(response);
-            }
-            return webResearchService.research(request, onProgress);
-        });
     }
 
     @Transactional
