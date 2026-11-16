@@ -25,7 +25,7 @@ public class ProjectFactExtractor {
             "\\b" + LENGTH_VALUE + "\\s+de\\s+(?:altura|alto)\\b");
     private static final Pattern AREA_PATTERN = Pattern.compile("(\\d+(?:[\\.,]\\d+)?)\\s*(metros?\\s*cuadrados|m(?:2|²|Â²))", Pattern.CASE_INSENSITIVE);
     private static final String AREA_VALUE = "(-?\\d+(?:[.,]\\d+)?)\\s*(?:metros?\\s*cuadrados|m(?:2|²|Â²))(?![\\p{L}\\d])";
-    private static final String CONNECTING_WORDS = "(?:\\s+[\\p{L}]+){0,4}?\\s*[:=]?\\s*";
+    private static final String CONNECTING_WORDS = "(?:\\s+[\\p{L}]+){0,7}?\\s*[:=]?\\s*";
     private static final Pattern LOT_AREA_PATTERN = Pattern.compile(
             "\\b(?:lote|predio|terreno|parcela)" + CONNECTING_WORDS + AREA_VALUE);
     private static final Pattern OCCUPIED_AREA_PATTERN = Pattern.compile(

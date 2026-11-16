@@ -53,4 +53,12 @@ class ProjectFactExtractorTest {
         assertThat(facts.heightMeters()).isEmpty();
         assertThat(facts.areaSquareMeters()).isEmpty();
     }
+
+    @Test
+    void recognizesLotAreaInNaturalProjectDescription() {
+        ProjectFacts facts = extractor.extract("El predio cuenta con un área total de 180 metros cuadrados y requiere retiros.");
+
+        assertThat(facts.lotAreaSquareMeters()).contains(180.0);
+        assertThat(facts.totalBuiltAreaSquareMeters()).isEmpty();
+    }
 }
