@@ -4,6 +4,7 @@ import com.normbuild.config.NormBuildAiProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,8 +29,8 @@ public class LlmClient {
     private String ollamaToken = "";
     @Value("${GROQ_API_KEY:}")
     private String groqApiKey = "";
-    @Value("${NORMBUILD_HOSTED_MODEL:llama-3.1-8b-instant}")
-    private String hostedModel = "llama-3.1-8b-instant";
+    @Value("${NORMBUILD_HOSTED_MODEL:openai/gpt-oss-20b}")
+    private String hostedModel = "openai/gpt-oss-20b";
 
     public LlmClient(WebClient.Builder webClientBuilder, NormBuildAiProperties properties) {
         this.webClient = webClientBuilder.build();
@@ -94,14 +95,19 @@ public class LlmClient {
     }
 
     private String generateHostedChecklist(String prompt) {
+        Map<String, Object> request = new HashMap<>();
+        request.put("model", hostedModel);
+        request.put("messages", List.of(Map.of("role", "user", "content", prompt)));
+        request.put("temperature", 0.1);
+        request.put("max_completion_tokens", Math.max(2048, properties.llmMaxOutputTokens()));
+        if (hostedModel.startsWith("openai/gpt-oss-")) {
+            request.put("reasoning_effort", "low");
+            request.put("include_reasoning", false);
+        }
         JsonNode response = webClient.post()
                 .uri("https://api.groq.com/openai/v1/chat/completions")
                 .headers(headers -> headers.setBearerAuth(groqApiKey))
-                .bodyValue(Map.of(
-                        "model", hostedModel,
-                        "messages", List.of(Map.of("role", "user", "content", prompt)),
-                        "temperature", 0.1,
-                        "max_completion_tokens", Math.max(1024, properties.llmMaxOutputTokens())))
+                .bodyValue(request)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .timeout(Duration.ofSeconds(Math.min(90, properties.llmTimeoutSeconds())))

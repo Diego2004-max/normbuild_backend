@@ -26,6 +26,7 @@ class HostedLlmClientTest {
         };
         var client = new LlmClient(WebClient.builder().exchangeFunction(exchange), properties());
         ReflectionTestUtils.setField(client, "groqApiKey", "test-key");
+        assertThat(ReflectionTestUtils.getField(client, "hostedModel")).isEqualTo("openai/gpt-oss-20b");
 
         assertThat(client.generateChecklist("Contexto oficial")).isEqualTo("Consulta la ficha normativa.");
         assertThat(headers.get().getFirst(HttpHeaders.AUTHORIZATION)).isEqualTo("Bearer test-key");
