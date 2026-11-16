@@ -11,6 +11,7 @@ import com.normbuild.regulation.dto.ComplianceQueryRequest;
 import com.normbuild.regulation.dto.CitationSourceType;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,30 @@ class RegulatoryWebResearchServiceTest {
     private final RegulatoryWebResearchService service = new RegulatoryWebResearchService(
             contextProvider, new ProjectAnalysisService(new ProjectFactExtractor()),
             new RegulatoryPromptBuilder(), new RegulatoryAnswerSanitizer(), llmClient, Runnable::run);
+
+    @Test
+    void keepsIndexedCitationFirstAndDeduplicatesMatchingWebUrl() {
+        var request = new ComplianceQueryRequest("Neiva", "Casa de dos pisos en lote de 180 m2");
+        String indexedUrl = "https://planeacion.neiva.gov.co/pot";
+        var indexed = new com.normbuild.regulation.dto.CitedRegulationResponse(
+                UUID.randomUUID(), "POT indexado", "Acuerdo local", "Artículo 10", indexedUrl,
+                0.8, "Texto oficial indexado.");
+        when(contextProvider.search("Neiva")).thenReturn(CompletableFuture.completedFuture(List.of(
+                new OfficialWebContextDocument("Duplicado", indexedUrl, "planeacion.neiva.gov.co", List.of("Extracto repetido")),
+                new OfficialWebContextDocument("Fuente reciente", "https://neiva.gov.co/actualizacion",
+                        "neiva.gov.co", List.of("Actualización por verificar.")))));
+        when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la ficha normativa [1].");
+
+        var response = service.research(request, List.of(indexed), progress -> { }).join();
+
+        assertThat(response.citations()).hasSize(2);
+        assertThat(response.citations().get(0).sourceType()).isEqualTo(CitationSourceType.INDEXED_VECTOR);
+        assertThat(response.citations().get(1).sourceType()).isEqualTo(CitationSourceType.LIVE_WEB);
+        assertThat(response.citations().get(1).sourceUrl()).isEqualTo("https://neiva.gov.co/actualizacion");
+        var prompt = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(llmClient).generateChecklist(prompt.capture());
+        assertThat(prompt.getValue()).contains("POT indexado", "Fuente reciente");
+    }
 
     @Test
     void groundsLocalModelAnswerInLiveGovernmentPageExtracts() {
