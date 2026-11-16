@@ -54,4 +54,20 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             @Param("prioritizeLicensing") boolean prioritizeLicensing,
             @Param("limit") int limit
     );
+
+    @Query(value = """
+            SELECT id, jurisdiction, title, regulation_code AS regulationCode,
+                   article_reference AS articleReference, source_url AS sourceUrl,
+                   content, 0.0 AS similarity
+            FROM regulatory_documents
+            WHERE jurisdiction IN (:jurisdiction, 'Colombia')
+              AND source_url IS NOT NULL
+              AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
+            ORDER BY created_at DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<RegulatoryDocumentProjection> findRecentOfficialRegulations(
+            @Param("jurisdiction") String jurisdiction,
+            @Param("limit") int limit
+    );
 }

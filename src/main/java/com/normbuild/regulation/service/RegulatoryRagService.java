@@ -102,7 +102,7 @@ public class RegulatoryRagService {
         );
         CompletableFuture<List<RegulatoryDocumentProjection>> contextFuture = embeddingFuture.thenApplyAsync(embedding -> {
             String vectorLiteral = embeddingFormatter.toVectorLiteral(embedding);
-            return documentRepository.findNearestRegulations(
+            List<RegulatoryDocumentProjection> semanticContext = documentRepository.findNearestRegulations(
                     JurisdictionNormalizer.canonicalize(request.jurisdiction()),
                     vectorLiteral,
                     properties.similarityThreshold(),
@@ -111,6 +111,16 @@ public class RegulatoryRagService {
                     prioritizeLicensing,
                     contextLimit
             );
+            if (!semanticContext.isEmpty()) {
+                return semanticContext;
+            }
+            String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
+            List<RegulatoryDocumentProjection> officialFallback = documentRepository
+                    .findRecentOfficialRegulations(jurisdiction, contextLimit);
+            if (!officialFallback.isEmpty()) {
+                LOGGER.info("Semantic retrieval returned no rows; using indexed official fallback for {}", jurisdiction);
+            }
+            return officialFallback;
         }, ragTaskExecutor);
         return contextFuture.thenApplyAsync(context -> {
             String requestedJurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
