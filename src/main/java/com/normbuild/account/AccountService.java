@@ -49,9 +49,10 @@ public class AccountService {
     }
 
     @Transactional
-    public synchronized AccountSession login(AccountCredentials credentials) {
+    public AccountSession login(AccountCredentials credentials) {
         String email = normalizeEmail(credentials.email());
-        if (failedLogins.getIfPresent(email) != null && failedLogins.getIfPresent(email) >= 5) {
+        Integer failures = failedLogins.getIfPresent(email);
+        if (failures != null && failures >= 5) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "Demasiados intentos de acceso. Espera unos minutos.");
         }
