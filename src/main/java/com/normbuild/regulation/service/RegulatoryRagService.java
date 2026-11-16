@@ -189,7 +189,8 @@ public class RegulatoryRagService {
             } catch (AiProviderException exception) {
                 LOGGER.warn("LLM generation unavailable; returning source references without a generated checklist", exception);
                 return new ComplianceChecklistResponse(
-                        "El proveedor de IA no pudo completar la respuesta. No se generó un checklist ni se evaluó el cumplimiento. Las fuentes oficiales recuperadas se conservan como referencia; verifica el servicio de IA e inténtalo nuevamente.",
+                        AiProviderFailureMessages.forCitizen(exception)
+                                + " No se generó un checklist ni se evaluó el cumplimiento. Las fuentes oficiales recuperadas se conservan como referencia.",
                         "Por verificar",
                         mapCitations(context),
                         OffsetDateTime.now(),

@@ -92,7 +92,8 @@ public class RegulatoryWebResearchService {
                         LOGGER.warn("Web research generation failed: requestId={}, errorType={}, httpStatus={}, reason={}",
                                 requestId, cause.getClass().getSimpleName(), status, exception.getMessage());
                         return new ComplianceChecklistResponse(
-                                "La búsqueda encontró extractos en páginas oficiales, pero el proveedor de IA no pudo redactar la orientación. Revisa las fuentes y vuelve a intentarlo.",
+                                AiProviderFailureMessages.forCitizen(exception)
+                                        + " Los extractos oficiales recuperados se conservan como referencia; no se evaluó el cumplimiento.",
                                 "Por verificar", citations, OffsetDateTime.now(), ChecklistGenerationMode.UNAVAILABLE, analysis);
                     }
                 }, ragTaskExecutor);
