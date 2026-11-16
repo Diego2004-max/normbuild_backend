@@ -25,6 +25,7 @@ import java.util.concurrent.Executor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,8 @@ public class RegulatoryRagService {
     private final RegulatoryAnswerSanitizer answerSanitizer;
     private final RegulatoryWebResearchService webResearchService;
     private final AtomicLong knowledgeVersion = new AtomicLong();
+    @Value("${NORMBUILD_EMBEDDINGS_ENABLED:true}")
+    private boolean embeddingsEnabled = true;
     private final Cache<QueryCacheKey, ComplianceChecklistResponse> responseCache = Caffeine.newBuilder()
             .maximumSize(100).expireAfterWrite(Duration.ofMinutes(5)).build();
 
@@ -96,15 +99,14 @@ public class RegulatoryRagService {
         String retrievalQuery = buildRetrievalQuery(request.projectDescription(), prioritizeBuildingRules, prioritizeLicensing);
         int contextLimit = prioritizeLicensing ? Math.min(3, properties.maxContextResults())
                 : prioritizeBuildingRules ? Math.min(2, properties.maxContextResults()) : properties.maxContextResults();
-        CompletableFuture<List<Double>> embeddingFuture = CompletableFuture.supplyAsync(
-                () -> embeddingClient.createEmbedding(retrievalQuery),
-                ragTaskExecutor
-        );
+        CompletableFuture<List<Double>> embeddingFuture = embeddingsEnabled
+                ? CompletableFuture.supplyAsync(() -> embeddingClient.createEmbedding(retrievalQuery), ragTaskExecutor)
+                : CompletableFuture.failedFuture(new AiProviderException("Embeddings disabled for this deployment."));
         CompletableFuture<List<RegulatoryDocumentProjection>> contextFuture = embeddingFuture.handleAsync((embedding, failure) -> {
             String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
             if (failure != null) {
                 LOGGER.warn("Embedding provider unavailable; using indexed official sources for {}", jurisdiction);
-                return documentRepository.findRecentOfficialRegulations(jurisdiction, contextLimit);
+                return findIndexedFallback(jurisdiction, contextLimit, prioritizeLicensing);
             }
             String vectorLiteral = embeddingFormatter.toVectorLiteral(embedding);
             List<RegulatoryDocumentProjection> semanticContext = documentRepository.findNearestRegulations(
@@ -119,8 +121,7 @@ public class RegulatoryRagService {
             if (!semanticContext.isEmpty()) {
                 return semanticContext;
             }
-            List<RegulatoryDocumentProjection> officialFallback = documentRepository
-                    .findRecentOfficialRegulations(jurisdiction, contextLimit);
+            List<RegulatoryDocumentProjection> officialFallback = findIndexedFallback(jurisdiction, contextLimit, prioritizeLicensing);
             if (!officialFallback.isEmpty()) {
                 LOGGER.info("Semantic retrieval returned no rows; using indexed official fallback for {}", jurisdiction);
             }
@@ -136,7 +137,8 @@ public class RegulatoryRagService {
             }
             return webResearchService.research(request, indexedCitations, onProgress)
                     .handle((liveResponse, failure) -> {
-                        if (failure == null && liveResponse.generationMode() == ChecklistGenerationMode.WEB_RESEARCH) {
+                        if (failure == null && (liveResponse.generationMode() == ChecklistGenerationMode.WEB_RESEARCH
+                                || liveResponse.generationMode() == ChecklistGenerationMode.UNAVAILABLE)) {
                             return liveResponse;
                         }
                         LOGGER.warn("Live research unavailable; using indexed regulations for {}",
@@ -144,6 +146,14 @@ public class RegulatoryRagService {
                         return generateFromIndexedContext(request, analysis, context, cacheKey, onProgress);
                     });
         });
+    }
+
+    private List<RegulatoryDocumentProjection> findIndexedFallback(
+            String jurisdiction, int limit, boolean prioritizeLicensing) {
+        String query = prioritizeLicensing
+                ? "licencia OR documentos OR radicación"
+                : "vivienda OR edificabilidad OR ocupación OR altura OR aislamientos";
+        return documentRepository.findRelevantOfficialRegulations(jurisdiction, query, limit);
     }
 
     private ComplianceChecklistResponse generateFromIndexedContext(

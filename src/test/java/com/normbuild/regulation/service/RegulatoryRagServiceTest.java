@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class RegulatoryRagServiceTest {
 
@@ -181,14 +182,28 @@ class RegulatoryRagServiceTest {
     void usesIndexedSourcesWhenEmbeddingProviderIsUnavailable() {
         when(embeddingClient.createEmbedding(anyString())).thenThrow(new AiProviderException("Vector no disponible."));
         RegulatoryDocumentProjection indexedSource = source();
-        when(repository.findRecentOfficialRegulations(anyString(), anyInt())).thenReturn(List.of(indexedSource));
+        when(repository.findRelevantOfficialRegulations(anyString(), anyString(), anyInt())).thenReturn(List.of(indexedSource));
         when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la ficha normativa.");
 
         ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
 
         assertThat(response.citations()).hasSize(1);
-        verify(repository).findRecentOfficialRegulations(anyString(), anyInt());
+        verify(repository).findRelevantOfficialRegulations(anyString(), anyString(), anyInt());
         verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt());
+    }
+
+    @Test
+    void skipsLocalEmbeddingOnHostedDeployment() {
+        ReflectionTestUtils.setField(service, "embeddingsEnabled", false);
+        RegulatoryDocumentProjection indexedSource = source();
+        when(repository.findRelevantOfficialRegulations(anyString(), anyString(), anyInt()))
+                .thenReturn(List.of(indexedSource));
+        when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la ficha normativa.");
+
+        ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
+
+        assertThat(response.citations()).hasSize(1);
+        verify(embeddingClient, never()).createEmbedding(anyString());
     }
 
     private RegulatoryDocumentProjection source() {

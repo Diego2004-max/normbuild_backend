@@ -70,4 +70,23 @@ public interface RegulatoryDocumentRepository extends JpaRepository<RegulatoryDo
             @Param("jurisdiction") String jurisdiction,
             @Param("limit") int limit
     );
+
+    @Query(value = """
+            SELECT id, jurisdiction, title, regulation_code AS regulationCode,
+                   article_reference AS articleReference, source_url AS sourceUrl,
+                   content, 0.0 AS similarity
+            FROM regulatory_documents
+            WHERE jurisdiction IN (:jurisdiction, 'Colombia')
+              AND source_url ~* '^https://([a-z0-9-]+[.])*gov[.]co(/|$)'
+              AND length(content) >= 100
+              AND to_tsvector('spanish', content) @@ websearch_to_tsquery('spanish', :query)
+            ORDER BY (CASE WHEN jurisdiction = :jurisdiction THEN 1 ELSE 0 END) DESC,
+                     ts_rank(to_tsvector('spanish', content), websearch_to_tsquery('spanish', :query)) DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<RegulatoryDocumentProjection> findRelevantOfficialRegulations(
+            @Param("jurisdiction") String jurisdiction,
+            @Param("query") String query,
+            @Param("limit") int limit
+    );
 }
