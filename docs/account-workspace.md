@@ -1,6 +1,6 @@
 # Account workspace design
 
-The public checklist remains available without an account. A registered citizen can save completed requests and retrieve only their own history. Administrators can manage reviewed official sources through separate authenticated operations. The existing ingestion API key remains in place until the admin endpoints are protected and tested.
+The public checklist remains available without an account. A registered citizen can save completed requests and retrieve only their own history. Administrators can import reviewed official sources through `/api/account/admin/sources`. The existing ingestion API key remains available for operational scripts.
 
 ## Storage
 
@@ -8,12 +8,13 @@ The public checklist remains available without an account. A registered citizen 
 
 ## Browser boundary
 
-The frontend must proxy `/api` through its own origin before cookie sessions are enabled. The server will issue a Secure, HttpOnly, SameSite=Lax cookie with a bounded lifetime. State-changing requests require CSRF protection. No access token or password belongs in local storage, application logs, or client bundles.
+The Vercel frontend proxies `/api/account` through its own origin. The server issues a Secure, HttpOnly, SameSite=Lax cookie with an eight-hour lifetime. Account mutations reject an Origin outside the configured frontend allowlist. No access token or password belongs in local storage, application logs, or client bundles.
+
+Only `CITIZEN` accounts can register publicly. Promote a reviewed account to `ADMIN` through a private database operation; do not add an admin signup route or publish the ingestion key. Administrators should verify the source, jurisdiction, amendments, and legal applicability before import.
 
 ## Rollout gates
 
-1. Verify the database migration against PostgreSQL 16.
-2. Add password hashing, generic login errors, registration throttling, and session rotation.
-3. Enforce citizen ownership on every history query and restrict administrative operations to `ADMIN`.
-4. Add same-origin proxying, Spanish account forms, accessible validation, and history controls.
-5. Verify login, logout, expiration, authorization, CSRF, and history isolation in a deployed environment before exposing registration.
+1. Verify the account tables and session cookie against the deployed PostgreSQL 16 and Vercel rewrite.
+2. Verify login, logout, expiration, role checks, CSRF origin rejection, and history isolation against the deployed service.
+3. Add a distributed registration rate limit and password reset before encouraging broad public account creation.
+4. Add a retention policy and account deletion before storing long-term personal project descriptions.
