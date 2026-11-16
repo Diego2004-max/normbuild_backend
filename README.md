@@ -60,7 +60,7 @@ URL on an official `.gov.co` host, and is disabled until
 
 On Render, set `GROQ_API_KEY` as a secret environment variable to generate
 checklists without a running local computer. The hosted model defaults to
-`llama-3.1-8b-instant` and can be changed with `NORMBUILD_HOSTED_MODEL`.
+`openai/gpt-oss-20b` and can be changed with `NORMBUILD_HOSTED_MODEL`.
 The citizen's project description and retrieved source excerpts are sent to
 the configured hosted model. Brave receives only the city and generic search
 terms. When the embedding endpoint is unavailable, the API still retrieves
