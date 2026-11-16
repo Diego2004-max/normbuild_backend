@@ -32,6 +32,8 @@ import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 class RegulatoryRagServiceTest {
 
@@ -204,6 +206,18 @@ class RegulatoryRagServiceTest {
 
         assertThat(response.citations()).hasSize(1);
         verify(embeddingClient, never()).createEmbedding(anyString());
+    }
+
+    @Test
+    void usesIndexedSourcesWhenLiveResearchIsNotConfigured() {
+        when(webResearchService.research(eq(request), any(), any()))
+                .thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la ficha normativa.");
+
+        ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
+
+        assertThat(response.generationMode()).isEqualTo(ChecklistGenerationMode.GENERATIVE);
+        assertThat(response.citations()).hasSize(1);
     }
 
     private RegulatoryDocumentProjection source() {

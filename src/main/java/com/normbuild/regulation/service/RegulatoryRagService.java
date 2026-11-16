@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.server.ResponseStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,19 +134,35 @@ public class RegulatoryRagService {
             boolean hasMunicipalContext = context.stream().anyMatch(document ->
                     requestedJurisdiction.equals(JurisdictionNormalizer.canonicalize(document.getJurisdiction())));
             if (!hasMunicipalContext && !requestedJurisdiction.equals("Colombia")) {
-                return webResearchService.research(request, onProgress);
+                try {
+                    return webResearchService.research(request, onProgress)
+                            .exceptionally(failure -> unavailableResearch(analysis));
+                } catch (ResponseStatusException exception) {
+                    return CompletableFuture.completedFuture(unavailableResearch(analysis));
+                }
             }
-            return webResearchService.research(request, indexedCitations, onProgress)
-                    .handle((liveResponse, failure) -> {
-                        if (failure == null && (liveResponse.generationMode() == ChecklistGenerationMode.WEB_RESEARCH
-                                || liveResponse.generationMode() == ChecklistGenerationMode.UNAVAILABLE)) {
-                            return liveResponse;
-                        }
-                        LOGGER.warn("Live research unavailable; using indexed regulations for {}",
-                                JurisdictionNormalizer.canonicalize(request.jurisdiction()));
-                        return generateFromIndexedContext(request, analysis, context, cacheKey, onProgress);
-                    });
+            try {
+                return webResearchService.research(request, indexedCitations, onProgress)
+                        .handle((liveResponse, failure) -> {
+                            if (failure == null && (liveResponse.generationMode() == ChecklistGenerationMode.WEB_RESEARCH
+                                    || liveResponse.generationMode() == ChecklistGenerationMode.UNAVAILABLE)) {
+                                return liveResponse;
+                            }
+                            LOGGER.warn("Live research unavailable; using indexed regulations for {}", requestedJurisdiction);
+                            return generateFromIndexedContext(request, analysis, context, cacheKey, onProgress);
+                        });
+            } catch (ResponseStatusException exception) {
+                LOGGER.warn("Live research unavailable; using indexed regulations for {}", requestedJurisdiction);
+                return CompletableFuture.completedFuture(
+                        generateFromIndexedContext(request, analysis, context, cacheKey, onProgress));
+            }
         });
+    }
+
+    private ComplianceChecklistResponse unavailableResearch(ProjectAnalysisResponse analysis) {
+        return new ComplianceChecklistResponse(
+                "La búsqueda de fuentes oficiales no está disponible en este momento. No se generó un checklist ni se evaluó el cumplimiento.",
+                "Por verificar", List.of(), OffsetDateTime.now(), ChecklistGenerationMode.NO_CONTEXT, analysis);
     }
 
     private List<RegulatoryDocumentProjection> findIndexedFallback(
@@ -153,7 +170,12 @@ public class RegulatoryRagService {
         String query = prioritizeLicensing
                 ? "licencia OR documentos OR radicación"
                 : "vivienda OR edificabilidad OR ocupación OR altura OR aislamientos";
-        return documentRepository.findRelevantOfficialRegulations(jurisdiction, query, limit);
+        List<RegulatoryDocumentProjection> relevant = documentRepository.findRelevantOfficialRegulations(jurisdiction, query, limit);
+        if (!relevant.isEmpty() || !prioritizeLicensing) {
+            return relevant;
+        }
+        return documentRepository.findRelevantOfficialRegulations(jurisdiction,
+                "vivienda OR edificabilidad OR ocupación OR altura OR aislamientos", limit);
     }
 
     private ComplianceChecklistResponse generateFromIndexedContext(
