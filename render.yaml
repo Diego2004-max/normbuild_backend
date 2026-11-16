@@ -27,9 +27,8 @@ services:
         sync: false
       - key: NORMBUILD_HOSTED_MODEL
         value: openai/gpt-oss-20b
-      # Optional: leave empty until a web-search provider is configured.
       - key: BRAVE_SEARCH_API_KEY
-        value: ""
+        sync: false
       - key: NORMBUILD_LLM_ENDPOINT
         value: http://127.0.0.1:11435/api/generate
       - key: NORMBUILD_EMBEDDING_ENDPOINT
