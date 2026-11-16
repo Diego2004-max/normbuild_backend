@@ -22,10 +22,10 @@ class RegulatoryAnswerSanitizerTest {
                         "Artículo 310", "https://bogota.gov.co/pot.pdf", 0.0, "Artículo 310. Consulta la ficha del predio."));
 
         String answer = sanitizer.sanitize(
-                "Consulta el mapa CU-5.4.2-33.\nExige aislamiento mínimo de 5 m y 3 m.\nRevisa la ficha oficial [1].",
+                "Consulta el mapa CU‑5.4.2‑33.\nExige aislamiento mínimo de 5 m y 3 m.\nRevisa la ficha oficial [1].",
                 analysis, citations, "Vivienda bifamiliar de dos pisos en lote de 180 m².");
 
-        assertThat(answer).doesNotContain("CU-5.4.2-33", "5 m", "3 m");
+        assertThat(answer).doesNotContain("CU‑5.4.2‑33", "5 m", "3 m");
         assertThat(answer).contains("Revisa la ficha oficial [1]");
     }
 

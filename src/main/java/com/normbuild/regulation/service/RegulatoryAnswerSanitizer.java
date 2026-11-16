@@ -34,7 +34,8 @@ public class RegulatoryAnswerSanitizer {
             "(?iu)(?:m[aá]xim[oa]|permitid[oa])[^.!?\\n]*\\d|\\d[^.!?\\n]*(?:m[aá]xim[oa]|permitid[oa])");
     private static final Pattern NUMERIC_BUILDING_MEASUREMENT = Pattern.compile(
             "(?iu)\\b\\d+(?:[.,]\\d+)?\\s*(?:m(?:etros?)?|pisos?|%)\\b");
-    private static final Pattern MAP_REFERENCE = Pattern.compile("(?iu)\\b[A-Z]{1,3}-\\d+(?:[.]\\d+){1,5}(?:-\\d+)?\\b");
+    private static final Pattern MAP_REFERENCE = Pattern.compile(
+            "(?iu)\\b[A-Z]{1,3}[-\\u2010-\\u2015\\u2212]\\d+(?:[.]\\d+){1,5}(?:[-\\u2010-\\u2015\\u2212]\\d+)?\\b");
 
     public String sanitize(String generatedAnswer, ProjectAnalysisResponse analysis,
                           List<CitedRegulationResponse> citations, String projectDescription) {
