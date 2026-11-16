@@ -58,11 +58,21 @@ URL on an official `.gov.co` host, and is disabled until
 
 ## AI request flow
 
+On Render, set `GROQ_API_KEY` as a secret environment variable to generate
+checklists without a running local computer. The hosted model defaults to
+`llama-3.1-8b-instant` and can be changed with `NORMBUILD_HOSTED_MODEL`.
+The citizen's project description and retrieved source excerpts are sent to
+the configured hosted model. Brave receives only the city and generic search
+terms. When the embedding endpoint is unavailable, the API still retrieves
+previously indexed official sources by jurisdiction. New document ingestion
+still requires an embedding provider; a hosted LLM does not create vectors.
+Never commit the API key or put it in the frontend's Vite variables.
+
 The API extracts project measurements, computes proposed occupancy and construction
-indices, creates an embedding with Ollama, and performs jurisdiction-scoped cosine
+indices, creates an embedding with Ollama when available, and performs jurisdiction-scoped cosine
 search in PostgreSQL/pgvector. If no local municipal source is indexed, it searches
 Brave LLM Context using only the city name and generic urban-planning terms, keeps
-HTTPS `.gov.co` results, and asks the local LLM to draft a preliminary answer from
+HTTPS `.gov.co` results, and asks the configured LLM to draft a preliminary answer from
 those extracts. The project description is not sent to Brave. Live-web citations
 are visibly marked as unverified and are not added to the vector database.
 

@@ -111,7 +111,7 @@ public class RegulationController {
                         sendEvent(emitter, closed, "complete", response);
                     } else {
                         sendEvent(emitter, closed, "error", new ApiErrorResponse(
-                                "No fue posible completar la revisión normativa. Comprueba que Ollama esté disponible.",
+                                "No fue posible completar la revisión normativa. Verifica que el proveedor de IA esté disponible.",
                                 List.of(), OffsetDateTime.now()));
                     }
                     closed.set(true);

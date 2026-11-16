@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ApiErrorResponse handleAsyncTimeout() {
         return new ApiErrorResponse(
-                "El análisis tardó más de lo esperado. Intenta nuevamente con una descripción más breve o revisa que Ollama esté respondiendo.",
+                "El análisis tardó más de lo esperado. Intenta nuevamente con una descripción más breve o verifica el proveedor de IA.",
                 List.of("Tiempo máximo de procesamiento agotado."),
                 OffsetDateTime.now()
         );
