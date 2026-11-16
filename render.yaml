@@ -23,6 +23,8 @@ services:
         value: https://normbuild-frontend.vercel.app
       - key: NORMBUILD_INGESTION_API_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
       # Optional: leave empty until a web-search provider is configured.
       - key: BRAVE_SEARCH_API_KEY
         value: ""
