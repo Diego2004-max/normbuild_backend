@@ -32,6 +32,8 @@ services:
         value: http://127.0.0.1:11435/api/generate
       - key: NORMBUILD_EMBEDDING_ENDPOINT
         value: http://127.0.0.1:11435/api/embeddings
+      - key: NORMBUILD_EMBEDDINGS_ENABLED
+        value: "false"
       - key: NORMBUILD_MODEL_NAME
         value: llama3.1
       - key: NORMBUILD_EMBEDDING_MODEL_NAME
