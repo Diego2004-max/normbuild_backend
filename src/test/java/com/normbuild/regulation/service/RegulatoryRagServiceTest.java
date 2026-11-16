@@ -178,13 +178,17 @@ class RegulatoryRagServiceTest {
     }
 
     @Test
-    void propagatesEmbeddingFailureInsteadOfFabricatingSources() {
+    void usesIndexedSourcesWhenEmbeddingProviderIsUnavailable() {
         when(embeddingClient.createEmbedding(anyString())).thenThrow(new AiProviderException("Vector no disponible."));
+        RegulatoryDocumentProjection indexedSource = source();
+        when(repository.findRecentOfficialRegulations(anyString(), anyInt())).thenReturn(List.of(indexedSource));
+        when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la ficha normativa.");
 
-        assertThatThrownBy(() -> service.answerComplianceQuestion(request).join())
-                .isInstanceOf(CompletionException.class).hasCauseInstanceOf(AiProviderException.class);
+        ComplianceChecklistResponse response = service.answerComplianceQuestion(request).join();
+
+        assertThat(response.citations()).hasSize(1);
+        verify(repository).findRecentOfficialRegulations(anyString(), anyInt());
         verify(repository, never()).findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt());
-        verify(llmClient, never()).generateChecklist(anyString());
     }
 
     private RegulatoryDocumentProjection source() {

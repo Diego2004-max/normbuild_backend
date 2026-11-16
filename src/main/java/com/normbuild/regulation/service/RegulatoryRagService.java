@@ -100,7 +100,12 @@ public class RegulatoryRagService {
                 () -> embeddingClient.createEmbedding(retrievalQuery),
                 ragTaskExecutor
         );
-        CompletableFuture<List<RegulatoryDocumentProjection>> contextFuture = embeddingFuture.thenApplyAsync(embedding -> {
+        CompletableFuture<List<RegulatoryDocumentProjection>> contextFuture = embeddingFuture.handleAsync((embedding, failure) -> {
+            String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
+            if (failure != null) {
+                LOGGER.warn("Embedding provider unavailable; using indexed official sources for {}", jurisdiction);
+                return documentRepository.findRecentOfficialRegulations(jurisdiction, contextLimit);
+            }
             String vectorLiteral = embeddingFormatter.toVectorLiteral(embedding);
             List<RegulatoryDocumentProjection> semanticContext = documentRepository.findNearestRegulations(
                     JurisdictionNormalizer.canonicalize(request.jurisdiction()),
@@ -114,7 +119,6 @@ public class RegulatoryRagService {
             if (!semanticContext.isEmpty()) {
                 return semanticContext;
             }
-            String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
             List<RegulatoryDocumentProjection> officialFallback = documentRepository
                     .findRecentOfficialRegulations(jurisdiction, contextLimit);
             if (!officialFallback.isEmpty()) {
@@ -175,7 +179,7 @@ public class RegulatoryRagService {
             } catch (AiProviderException exception) {
                 LOGGER.warn("LLM generation unavailable; returning source references without a generated checklist", exception);
                 return new ComplianceChecklistResponse(
-                        "El modelo local no pudo completar la respuesta. No se generó un checklist ni se evaluó el cumplimiento. Las fuentes oficiales recuperadas se conservan como referencia; verifica el servicio de IA e inténtalo nuevamente.",
+                        "El proveedor de IA no pudo completar la respuesta. No se generó un checklist ni se evaluó el cumplimiento. Las fuentes oficiales recuperadas se conservan como referencia; verifica el servicio de IA e inténtalo nuevamente.",
                         "Por verificar",
                         mapCitations(context),
                         OffsetDateTime.now(),
