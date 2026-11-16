@@ -27,6 +27,7 @@ spring:
       schema-locations:
         - classpath:db/init/001-enable-pgvector.sql
         - classpath:db/init/002-create-regulatory-documents.sql
+        - classpath:db/init/003-create-user-workspace.sql
 
 normbuild:
   security:
