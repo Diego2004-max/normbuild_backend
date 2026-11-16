@@ -32,6 +32,9 @@ public class RegulatoryAnswerSanitizer {
             "(?iu).*(?:ratios propuestos|de lote:|verificaci.{1,3}n de .{1,3}ndices urban.sticos|informaci.{1,3}n proporcionada no es suficiente para determinar).*");
     private static final Pattern UNSUPPORTED_NUMERIC_LIMIT = Pattern.compile(
             "(?iu)(?:m[aá]xim[oa]|permitid[oa])[^.!?\\n]*\\d|\\d[^.!?\\n]*(?:m[aá]xim[oa]|permitid[oa])");
+    private static final Pattern NUMERIC_BUILDING_MEASUREMENT = Pattern.compile(
+            "(?iu)\\b\\d+(?:[.,]\\d+)?\\s*(?:m(?:etros?)?|pisos?|%)\\b");
+    private static final Pattern MAP_REFERENCE = Pattern.compile("(?iu)\\b[A-Z]{1,3}-\\d+(?:[.]\\d+){1,5}(?:-\\d+)?\\b");
 
     public String sanitize(String generatedAnswer, ProjectAnalysisResponse analysis,
                           List<CitedRegulationResponse> citations, String projectDescription) {
@@ -40,7 +43,10 @@ public class RegulatoryAnswerSanitizer {
             boolean unsupportedClassification = hasUnprovidedParcelClassification(line, projectDescription);
             boolean unsupportedWebArticle = citations.stream().anyMatch(citation -> citation.sourceType() == CitationSourceType.LIVE_WEB)
                     && hasUnverifiedArticleNumber(line, citations);
+            boolean unsupportedMapReference = hasUnsupportedMapReference(line, citations);
             if (!UNSUPPORTED_NUMERIC_LIMIT.matcher(line).find()
+                    && !NUMERIC_BUILDING_MEASUREMENT.matcher(line).find()
+                    && !unsupportedMapReference
                     && !unsupportedWebArticle
                     && !UNSUPPORTED_MISSING_PROJECT_INDICES.matcher(line).find()
                     && !MODEL_ARTICLE_SELECTION_CLAIM.matcher(line).find()
@@ -78,6 +84,18 @@ public class RegulatoryAnswerSanitizer {
         }
         sections.add(conclusion);
         return String.join("\n\n", sections);
+    }
+
+    private boolean hasUnsupportedMapReference(String line, List<CitedRegulationResponse> citations) {
+        Matcher matcher = MAP_REFERENCE.matcher(line);
+        while (matcher.find()) {
+            String reference = matcher.group();
+            if (citations.stream().noneMatch(citation -> citation.excerpt() != null
+                    && citation.excerpt().toLowerCase(Locale.ROOT).contains(reference.toLowerCase(Locale.ROOT)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasUnverifiedArticleNumber(String line, List<CitedRegulationResponse> citations) {

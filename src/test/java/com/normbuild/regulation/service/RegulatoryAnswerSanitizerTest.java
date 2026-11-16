@@ -14,6 +14,22 @@ class RegulatoryAnswerSanitizerTest {
     private final RegulatoryAnswerSanitizer sanitizer = new RegulatoryAnswerSanitizer();
 
     @Test
+    void removesUnsupportedSetbackMeasurementsAndMapCodes() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(
+                180.0, null, null, null, null, null, List.of());
+        List<CitedRegulationResponse> citations = List.of(
+                new CitedRegulationResponse(UUID.randomUUID(), "POT Bogotá", "Decreto 555 de 2021",
+                        "Artículo 310", "https://bogota.gov.co/pot.pdf", 0.0, "Artículo 310. Consulta la ficha del predio."));
+
+        String answer = sanitizer.sanitize(
+                "Consulta el mapa CU-5.4.2-33.\nExige aislamiento mínimo de 5 m y 3 m.\nRevisa la ficha oficial [1].",
+                analysis, citations, "Vivienda bifamiliar de dos pisos en lote de 180 m².");
+
+        assertThat(answer).doesNotContain("CU-5.4.2-33", "5 m", "3 m");
+        assertThat(answer).contains("Revisa la ficha oficial [1]");
+    }
+
+    @Test
     void keepsCalculatedProposalRatiosAndRemovesUnverifiedLegalLimits() {
         ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(
                 200.0, 100.0, 200.0, BigDecimal.valueOf(0.5), BigDecimal.ONE,
