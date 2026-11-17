@@ -32,6 +32,9 @@ public class ProjectFactExtractor {
             "\\b(?:ocupar|ocupaci[oó]n|[aá]rea\\s+ocupada)\\s*(?:(?:de|por|es|igual\\s+a)\\s*)?[:=]?\\s*" + AREA_VALUE, Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern FIRST_FLOOR_AREA_PATTERN = Pattern.compile(
             AREA_VALUE + "\\s+(?:de\\s+)?(?:ocupaci[oó]n\\s+)?en\\s+(?:el\\s+)?primer piso\\b", Pattern.UNICODE_CHARACTER_CLASS);
+    private static final Pattern FIRST_FLOOR_FOOTPRINT_PATTERN = Pattern.compile(
+            "\\b(?:huella(?:\\s+(?:cubierta|construida))?|[aá]rea\\s+cubierta)(?:\\s+del|\\s+en\\s+el)?\\s+primer piso"
+                    + CONNECTING_WORDS + AREA_VALUE, Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern BUILT_AREA_PATTERN = Pattern.compile(
             "\\b(?:[aá]rea(?:\\s+total)?\\s+construida|construcci[oó]n\\s+total)" + CONNECTING_WORDS + AREA_VALUE, Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern TOTAL_AREA_PATTERN = Pattern.compile(
@@ -46,7 +49,7 @@ public class ProjectFactExtractor {
                 height,
                 extractDecimal(AREA_PATTERN, normalized),
                 extractUniqueArea(normalized, LOT_AREA_PATTERN),
-                extractUniqueArea(normalized, OCCUPIED_AREA_PATTERN, FIRST_FLOOR_AREA_PATTERN),
+                extractUniqueArea(normalized, OCCUPIED_AREA_PATTERN, FIRST_FLOOR_AREA_PATTERN, FIRST_FLOOR_FOOTPRINT_PATTERN),
                 extractUniqueArea(normalized, BUILT_AREA_PATTERN, TOTAL_AREA_PATTERN),
                 containsAny(normalized, "residencial", "vivienda", "casa", "bifamiliar", "unifamiliar"),
                 containsAny(normalized, "retiro", "retiros", "aislamiento", "aislamientos", "antejardín", "antejardin"),

@@ -61,4 +61,14 @@ class ProjectFactExtractorTest {
         assertThat(facts.lotAreaSquareMeters()).contains(180.0);
         assertThat(facts.totalBuiltAreaSquareMeters()).isEmpty();
     }
+
+    @Test
+    void recognizesCoveredFirstFloorFootprint() {
+        ProjectFacts facts = extractor.extract(
+                "Lote urbano de 180 m². La huella cubierta del primer piso será de 90 m² y el área construida total será de 180 m².");
+
+        assertThat(facts.lotAreaSquareMeters()).contains(180.0);
+        assertThat(facts.occupiedAreaSquareMeters()).contains(90.0);
+        assertThat(facts.totalBuiltAreaSquareMeters()).contains(180.0);
+    }
 }
