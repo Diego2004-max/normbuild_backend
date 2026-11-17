@@ -128,7 +128,8 @@ public class RegulatoryRagService {
             }
             return officialFallback;
         }, ragTaskExecutor);
-        return contextFuture.thenCompose(context -> {
+        return contextFuture.thenApply(context -> filterTerritorialContext(context, request.projectDescription()))
+                .thenCompose(context -> {
             List<CitedRegulationResponse> indexedCitations = mapCitations(context);
             String requestedJurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
             boolean hasMunicipalContext = context.stream().anyMatch(document ->
@@ -276,6 +277,22 @@ public class RegulatoryRagService {
     private boolean isSpecializedHousingQuery(String description) {
         return java.util.regex.Pattern.compile("(?iu)\\bvip\\b")
                 .matcher(description).find();
+    }
+
+    static List<RegulatoryDocumentProjection> filterTerritorialContext(
+            List<RegulatoryDocumentProjection> context, String projectDescription) {
+        boolean urbanProject = java.util.regex.Pattern.compile("(?iu)\\b(?:urbano|urbana|zona urbana|suelo urbano)\\b")
+                .matcher(projectDescription).find();
+        boolean ruralProject = java.util.regex.Pattern.compile("(?iu)\\b(?:rural|campestre|centro poblado)\\b")
+                .matcher(projectDescription).find();
+        if (!urbanProject || ruralProject) return context;
+        return context.stream().filter(document -> {
+            String searchable = ((document.getArticleReference() == null ? "" : document.getArticleReference()) + " "
+                    + (document.getContent() == null ? "" : document.getContent()));
+            return !java.util.regex.Pattern.compile(
+                    "(?iu)\\b(?:centros? poblados? rurales?|suelo rural|edificabilidad rural|parcelaci[oó]n rural)\\b")
+                    .matcher(searchable).find();
+        }).toList();
     }
 
     private String buildRetrievalQuery(String description, boolean prioritizeBuildingRules, boolean prioritizeLicensing) {
