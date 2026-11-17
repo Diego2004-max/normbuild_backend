@@ -144,21 +144,10 @@ public class RegulatoryRagService {
                     return CompletableFuture.completedFuture(unavailableResearch(analysis));
                 }
             }
-            try {
-                return webResearchService.research(request, indexedCitations, onProgress)
-                        .handle((liveResponse, failure) -> {
-                            if (failure == null && (liveResponse.generationMode() == ChecklistGenerationMode.WEB_RESEARCH
-                                    || liveResponse.generationMode() == ChecklistGenerationMode.UNAVAILABLE)) {
-                                return liveResponse;
-                            }
-                            LOGGER.warn("Live research unavailable; using indexed regulations for {}", requestedJurisdiction);
-                            return generateFromIndexedContext(request, analysis, context, cacheKey, onProgress);
-                        });
-            } catch (ResponseStatusException exception) {
-                LOGGER.warn("Live research unavailable; using indexed regulations for {}", requestedJurisdiction);
-                return CompletableFuture.completedFuture(
-                        generateFromIndexedContext(request, analysis, context, cacheKey, onProgress));
-            }
+            LOGGER.info("Using indexed official regulations for {} without external-search latency",
+                    requestedJurisdiction);
+            return CompletableFuture.completedFuture(
+                    generateFromIndexedContext(request, analysis, context, cacheKey, onProgress));
         });
     }
 

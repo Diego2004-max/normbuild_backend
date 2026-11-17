@@ -73,20 +73,15 @@ class RegulatoryRagServiceTest {
     }
 
     @Test
-    void combinesIndexedAndLiveSourcesWithOneGeneration() {
-        when(webResearchService.research(eq(request), any(), any())).thenAnswer(invocation -> {
-            List<com.normbuild.regulation.dto.CitedRegulationResponse> indexed = invocation.getArgument(1);
-            assertThat(indexed).hasSize(1);
-            assertThat(indexed.getFirst().sourceUrl()).isEqualTo("https://bogotajuridica.gov.co/norma");
-            return CompletableFuture.completedFuture(new ComplianceChecklistResponse(
-                    "OrientaciÃ³n combinada", "Por verificar", indexed, OffsetDateTime.now(),
-                    ChecklistGenerationMode.WEB_RESEARCH, null));
-        });
+    void usesIndexedMunicipalSourcesWithoutWaitingForLiveResearch() {
+        when(llmClient.generateChecklist(anyString())).thenReturn("Verifica la ficha normativa [1].");
 
         ComplianceChecklistResponse result = service.answerComplianceQuestion(request).join();
 
-        assertThat(result.answer()).isEqualTo("OrientaciÃ³n combinada");
-        verify(llmClient, never()).generateChecklist(anyString());
+        assertThat(result.generationMode()).isEqualTo(ChecklistGenerationMode.GENERATIVE);
+        assertThat(result.citations()).hasSize(1);
+        verify(webResearchService, never()).research(eq(request), any(), any());
+        verify(llmClient).generateChecklist(anyString());
     }
 
     @Test

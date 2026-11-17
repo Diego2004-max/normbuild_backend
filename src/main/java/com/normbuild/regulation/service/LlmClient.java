@@ -99,7 +99,7 @@ public class LlmClient {
         request.put("model", hostedModel);
         request.put("messages", List.of(Map.of("role", "user", "content", prompt)));
         request.put("temperature", 0.1);
-        request.put("max_completion_tokens", Math.max(2048, properties.llmMaxOutputTokens()));
+        request.put("max_completion_tokens", Math.max(512, Math.min(1024, properties.llmMaxOutputTokens())));
         if (hostedModel.startsWith("openai/gpt-oss-")) {
             request.put("reasoning_effort", "low");
             request.put("include_reasoning", false);
