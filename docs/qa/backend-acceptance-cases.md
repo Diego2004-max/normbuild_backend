@@ -11,3 +11,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 007. **Bogota D.C. / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
 008. **Bogota D.C. / provider-failure:** When the hosted model fails, the API identifies unavailable generation and preserves arithmetic without claiming compliance.
 009. **Pasto / coverage:** Coverage reports indexed source and section counts when documents exist, or NO_OFFICIAL_SOURCE when none exist.
+010. **Pasto / discovery:** Official-source discovery returns traceable HTTPS candidates and labels each result as pending legal review.
