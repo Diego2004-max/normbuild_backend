@@ -75,8 +75,9 @@ public class AccountController {
     @GetMapping("/me")
     public ResponseEntity<AccountProfile> me(
             @CookieValue(value = SESSION_COOKIE, required = false) String sessionToken) {
-        return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "no-store")
-                .body(accountService.requireSession(sessionToken));
+        return accountService.findSession(sessionToken)
+                .map(profile -> ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "no-store").body(profile))
+                .orElseGet(() -> ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build());
     }
 
     @GetMapping("/history")

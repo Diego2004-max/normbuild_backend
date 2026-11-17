@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -110,6 +111,17 @@ public class AccountService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "La sesión expiró. Inicia sesión nuevamente.");
         }
         return users.getFirst();
+    }
+
+    public Optional<AccountProfile> findSession(String token) {
+        if (token == null || token.isBlank()) return Optional.empty();
+        List<AccountProfile> users = jdbc.query("""
+                SELECT u.id, u.email, u.role
+                FROM user_sessions s JOIN app_users u ON u.id = s.user_id
+                WHERE s.token_hash = ? AND s.expires_at > NOW()
+                """, (row, number) -> new AccountProfile(
+                (UUID) row.getObject("id"), row.getString("email"), row.getString("role")), hashToken(token));
+        return users.stream().findFirst();
     }
 
     public void logout(String token) {

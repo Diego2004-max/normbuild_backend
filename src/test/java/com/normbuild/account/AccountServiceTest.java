@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import java.util.List;
 import org.mockito.ArgumentCaptor;
@@ -27,6 +28,12 @@ class AccountServiceTest {
         ResponseStatusException failure = assertThrows(ResponseStatusException.class,
                 () -> service.requireSession(null));
         assertEquals(401, failure.getStatusCode().value());
+    }
+
+    @Test
+    void reportsAnonymousSessionWithoutAnAuthenticationError() {
+        assertTrue(service.findSession(null).isEmpty());
+        verifyNoInteractions(jdbc);
     }
 
     @Test
