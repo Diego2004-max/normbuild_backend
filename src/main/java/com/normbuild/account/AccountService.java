@@ -61,13 +61,39 @@ public class AccountService {
                 (row, number) -> new UserWithPassword(
                         (UUID) row.getObject("id"), row.getString("email"),
                         row.getString("role"), row.getString("password_hash")), email);
-        if (users.isEmpty() || !passwords.matches(credentials.password(), users.getFirst().passwordHash())) {
+        if (users.isEmpty() || users.getFirst().passwordHash() == null
+                || !passwords.matches(credentials.password(), users.getFirst().passwordHash())) {
             failedLogins.asMap().merge(email, 1, Integer::sum);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos.");
         }
         failedLogins.invalidate(email);
         UserWithPassword user = users.getFirst();
         return createSession(new AccountProfile(user.id(), user.email(), user.role()));
+    }
+
+    @Transactional
+    public AccountSession loginWithGoogle(GoogleIdentityService.VerifiedGoogleIdentity identity) {
+        List<AccountProfile> linked = jdbc.query(
+                "SELECT id, email, role FROM app_users WHERE google_subject = ?",
+                (row, number) -> new AccountProfile((UUID) row.getObject("id"),
+                        row.getString("email"), row.getString("role")), identity.subject());
+        if (!linked.isEmpty()) return createSession(linked.getFirst());
+
+        Integer existingEmail = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM app_users WHERE email = ?", Integer.class, identity.email());
+        if (existingEmail != null && existingEmail > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Este correo ya tiene una cuenta. Inicia sesión con tu contraseña.");
+        }
+        UUID id = UUID.randomUUID();
+        try {
+            jdbc.update("INSERT INTO app_users (id, email, google_subject, role) VALUES (?, ?, ?, 'CITIZEN')",
+                    id, identity.email(), identity.subject());
+        } catch (DuplicateKeyException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "La cuenta cambió durante el acceso. Intenta nuevamente.");
+        }
+        return createSession(new AccountProfile(id, identity.email(), "CITIZEN"));
     }
 
     public AccountProfile requireSession(String token) {

@@ -36,14 +36,16 @@ public class AccountController {
     private final AccountService accountService;
     private final QueryHistoryService historyService;
     private final RegulatoryRagService ragService;
+    private final GoogleIdentityService googleIdentityService;
     private final boolean secureCookies;
 
     public AccountController(AccountService accountService, QueryHistoryService historyService,
-            RegulatoryRagService ragService,
+            RegulatoryRagService ragService, GoogleIdentityService googleIdentityService,
             @Value("${NORMBUILD_SECURE_COOKIES:true}") boolean secureCookies) {
         this.accountService = accountService;
         this.historyService = historyService;
         this.ragService = ragService;
+        this.googleIdentityService = googleIdentityService;
         this.secureCookies = secureCookies;
     }
 
@@ -56,6 +58,19 @@ public class AccountController {
     public ResponseEntity<AccountProfile> login(@Valid @RequestBody AccountCredentials credentials) {
         return authenticated(accountService.login(credentials));
     }
+
+    @GetMapping("/google/config")
+    public ResponseEntity<GoogleConfig> googleConfig() {
+        return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(new GoogleConfig(googleIdentityService.clientId()));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AccountProfile> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        return authenticated(accountService.loginWithGoogle(googleIdentityService.verify(request.credential())));
+    }
+
+    private record GoogleConfig(String clientId) { }
 
     @GetMapping("/me")
     public ResponseEntity<AccountProfile> me(
