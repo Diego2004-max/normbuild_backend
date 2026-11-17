@@ -42,3 +42,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 038. **Bucaramanga / missing-area:** When first-floor footprint is absent, proposed occupancy remains unknown while other independently supplied figures remain available.
 039. **Bucaramanga / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
 040. **Bucaramanga / provider-failure:** When the hosted model fails, the API identifies unavailable generation and preserves arithmetic without claiming compliance.
+041. **Barranquilla / coverage:** Coverage reports indexed source and section counts when documents exist, or NO_OFFICIAL_SOURCE when none exist.
