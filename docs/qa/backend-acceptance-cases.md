@@ -9,3 +9,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 005. **Bogota D.C. / arithmetic:** Given a 200 square meter lot, 100 square meter first-floor footprint, and 200 square meter total built area, proposed occupancy is 0.50 and construction is 1.00.
 006. **Bogota D.C. / missing-area:** When first-floor footprint is absent, proposed occupancy remains unknown while other independently supplied figures remain available.
 007. **Bogota D.C. / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
+008. **Bogota D.C. / provider-failure:** When the hosted model fails, the API identifies unavailable generation and preserves arithmetic without claiming compliance.
