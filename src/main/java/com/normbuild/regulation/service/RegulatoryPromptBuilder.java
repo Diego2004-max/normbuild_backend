@@ -76,7 +76,7 @@ public class RegulatoryPromptBuilder {
         }
         builder.append("Give the citizen a concise preliminary checklist relevant to their question. Cite only supplied source numbers. ");
         builder.append("Say when a passage is insufficient or merely a portal summary. Do not treat a web snippet as a complete ordinance. ");
-        builder.append("Explain that parcel-level treatment, land use, maps, frontage, typology, easements, and current amendments still need official verification. ");
+        builder.append("Explain in Spanish that parcel-level treatment, land use, maps, frontage, typology, servidumbres, and current amendments still need official verification. ");
         builder.append("Do not authorize construction. Never state a numeric setback, height or plot ratio from a snippet without verified parcel conditions. ");
         builder.append("End with 'Riesgo: Por verificar'. Use at most 160 words.");
         return builder.toString();

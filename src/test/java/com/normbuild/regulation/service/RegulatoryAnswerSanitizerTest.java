@@ -14,6 +14,14 @@ class RegulatoryAnswerSanitizerTest {
     private final RegulatoryAnswerSanitizer sanitizer = new RegulatoryAnswerSanitizer();
 
     @Test
+    void translatesResidualTechnicalAnglicismsBeforeReturningCitizenText() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(null, null, null, null, null, null, List.of());
+        String answer = sanitizer.sanitize(
+                "Observaciones: verifica easements y datos del predio.", analysis, List.of(), "Casa urbana.");
+        assertThat(answer).contains("servidumbres").doesNotContain("easements");
+    }
+
+    @Test
     void removesUnsupportedSetbackMeasurementsAndMapCodes() {
         ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(
                 180.0, null, null, null, null, null, List.of());

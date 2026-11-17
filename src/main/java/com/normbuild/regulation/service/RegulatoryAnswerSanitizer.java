@@ -62,6 +62,8 @@ public class RegulatoryAnswerSanitizer {
                     && !MODEL_REDUNDANT_ANALYSIS.matcher(line).matches()
                     && !unsupportedClassification && !line.isBlank()) {
                 String plainText = line.strip().replace("**", "");
+                plainText = plainText.replaceAll("(?iu)\\beasements?\\b", "servidumbres")
+                        .replaceAll("(?iu)\\bratios?\\b", "índices");
                 if (plainText.startsWith("* ")) {
                     plainText = plainText.substring(2);
                 }
