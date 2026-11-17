@@ -14,3 +14,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 010. **Pasto / discovery:** Official-source discovery returns traceable HTTPS candidates and labels each result as pending legal review.
 011. **Pasto / provenance:** A retrieved excerpt includes its exact official source URL and does not present a search snippet as a verified article.
 012. **Pasto / jurisdiction:** The compliance review uses only sources assigned to this jurisdiction and never applies rules from another municipality.
+013. **Pasto / arithmetic:** Given a 200 square meter lot, 100 square meter first-floor footprint, and 200 square meter total built area, proposed occupancy is 0.50 and construction is 1.00.
