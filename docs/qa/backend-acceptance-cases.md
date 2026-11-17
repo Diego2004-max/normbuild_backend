@@ -16,3 +16,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 012. **Pasto / jurisdiction:** The compliance review uses only sources assigned to this jurisdiction and never applies rules from another municipality.
 013. **Pasto / arithmetic:** Given a 200 square meter lot, 100 square meter first-floor footprint, and 200 square meter total built area, proposed occupancy is 0.50 and construction is 1.00.
 014. **Pasto / missing-area:** When first-floor footprint is absent, proposed occupancy remains unknown while other independently supplied figures remain available.
+015. **Pasto / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
