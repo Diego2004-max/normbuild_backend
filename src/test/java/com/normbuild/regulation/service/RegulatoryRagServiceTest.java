@@ -57,7 +57,7 @@ class RegulatoryRagServiceTest {
                 parsingService, repository,
                 jdbcRepository, Runnable::run,
                 new ProjectAnalysisService(new ProjectFactExtractor()),
-                new RegulatoryAnswerSanitizer(), webResearchService);
+                new RegulatoryAnswerSanitizer(), webResearchService, new SimpleRegulatoryGuidanceService());
         when(embeddingClient.createEmbedding(anyString())).thenReturn(List.of(0.2, 0.8));
         when(repository.findNearestRegulations(anyString(), anyString(), anyDouble(), anyBoolean(), anyBoolean(), anyBoolean(), anyInt()))
                 .thenAnswer(invocation -> {
@@ -101,7 +101,7 @@ class RegulatoryRagServiceTest {
     void prioritizesDecree1077AndFiltersOutNonLicensingChunksForPermitQuestions() {
         when(llmClient.generateChecklist(anyString())).thenReturn("Consulta la ficha normativa del predio.");
         ComplianceQueryRequest licensingRequest = new ComplianceQueryRequest(
-                "Bucaramanga", "Necesito licencia de construcci?n para una casa unifamiliar urbana.");
+                "Bucaramanga", "Proyecto de casa unifamiliar urbana con trámite de licencia de construcción y documentos de radicación.");
 
         service.answerComplianceQuestion(licensingRequest).join();
 

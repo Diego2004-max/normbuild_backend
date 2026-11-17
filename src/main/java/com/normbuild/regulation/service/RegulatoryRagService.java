@@ -47,6 +47,7 @@ public class RegulatoryRagService {
     private final ProjectAnalysisService projectAnalysisService;
     private final RegulatoryAnswerSanitizer answerSanitizer;
     private final RegulatoryWebResearchService webResearchService;
+    private final SimpleRegulatoryGuidanceService simpleGuidanceService;
     private final AtomicLong knowledgeVersion = new AtomicLong();
     @Value("${NORMBUILD_EMBEDDINGS_ENABLED:true}")
     private boolean embeddingsEnabled = true;
@@ -65,7 +66,8 @@ public class RegulatoryRagService {
             @Qualifier("ragTaskExecutor") Executor ragTaskExecutor,
             ProjectAnalysisService projectAnalysisService,
             RegulatoryAnswerSanitizer answerSanitizer,
-            RegulatoryWebResearchService webResearchService
+            RegulatoryWebResearchService webResearchService,
+            SimpleRegulatoryGuidanceService simpleGuidanceService
     ) {
         this.properties = properties;
         this.embeddingClient = embeddingClient;
@@ -79,6 +81,7 @@ public class RegulatoryRagService {
         this.projectAnalysisService = projectAnalysisService;
         this.answerSanitizer = answerSanitizer;
         this.webResearchService = webResearchService;
+        this.simpleGuidanceService = simpleGuidanceService;
     }
 
     public CompletableFuture<ComplianceChecklistResponse> answerComplianceQuestion(ComplianceQueryRequest request) {
@@ -94,6 +97,11 @@ public class RegulatoryRagService {
             return CompletableFuture.completedFuture(cached);
         }
         ProjectAnalysisResponse analysis = projectAnalysisService.analyze(request.projectDescription());
+        var simpleGuidance = simpleGuidanceService.answer(request, analysis);
+        if (simpleGuidance.isPresent()) {
+            responseCache.put(cacheKey, simpleGuidance.get());
+            return CompletableFuture.completedFuture(simpleGuidance.get());
+        }
         onProgress.accept(pendingResponse(analysis, List.of()));
         boolean prioritizeBuildingRules = isBuildingRulesQuery(request.projectDescription());
         boolean prioritizeLicensing = isLicensingQuery(request.projectDescription());
