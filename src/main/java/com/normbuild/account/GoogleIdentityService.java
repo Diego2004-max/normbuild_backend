@@ -52,6 +52,9 @@ public class GoogleIdentityService {
                         "La cuenta de Google no proporcionó una identidad válida.");
             }
             return new VerifiedGoogleIdentity(subject, email.toLowerCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "La credencial de Google no es válida.");
         } catch (GeneralSecurityException | IOException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
                     "No fue posible verificar la identidad con Google. Intenta nuevamente.");

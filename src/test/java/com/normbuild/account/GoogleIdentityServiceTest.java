@@ -24,4 +24,12 @@ class GoogleIdentityServiceTest {
                 () -> service.verify(" "));
         assertEquals(400, failure.getStatusCode().value());
     }
+
+    @Test
+    void rejectsUnsignedCredentialWithoutCreatingAnIdentity() {
+        GoogleIdentityService service = new GoogleIdentityService("web-client.apps.googleusercontent.com");
+        ResponseStatusException failure = assertThrows(ResponseStatusException.class,
+                () -> service.verify("not-a-google-id-token"));
+        assertEquals(401, failure.getStatusCode().value());
+    }
 }
