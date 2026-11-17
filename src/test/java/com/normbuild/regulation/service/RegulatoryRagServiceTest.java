@@ -282,6 +282,25 @@ class RegulatoryRagServiceTest {
     }
 
     @Test
+    void indexesOfficialDocumentsWithoutCallingLocalEmbeddingsWhenDisabled() {
+        ReflectionTestUtils.setField(service, "embeddingsEnabled", false);
+        when(parsingService.normalizeContentAsync(anyString()))
+                .thenReturn(CompletableFuture.completedFuture("Contenido normativo oficial normalizado."));
+        when(jdbcRepository.insertDocument(any(UUID.class), any(DocumentIngestionRequest.class), anyString()))
+                .thenReturn(1);
+
+        service.ingestDocument(new DocumentIngestionRequest(
+                "POT de Bucaramanga", "Bucaramanga", "Acuerdo 011 de 2014", "Artículo 1",
+                "https://www.bucaramanga.gov.co/POT-2014-2027.pdf",
+                "Contenido normativo oficial suficientemente largo para indexar."))
+                .join();
+
+        verify(embeddingClient, never()).createEmbedding(anyString());
+        verify(jdbcRepository).insertDocument(any(UUID.class), any(DocumentIngestionRequest.class),
+                eq("[" + "0.00000000,".repeat(767) + "0.00000000]"));
+    }
+
+    @Test
     void invalidatesCompletedResponsesWhenKnowledgeIsUpdated() {
         when(llmClient.generateChecklist(anyString())).thenReturn("Revisión terminada.");
         when(jdbcRepository.insertDocument(any(UUID.class), any(DocumentIngestionRequest.class), anyString())).thenReturn(1);

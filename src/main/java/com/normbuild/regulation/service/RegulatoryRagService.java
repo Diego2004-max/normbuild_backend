@@ -230,7 +230,9 @@ public class RegulatoryRagService {
         String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
         CompletableFuture<String> normalizedFuture = parsingService.normalizeContentAsync(request.content());
         return normalizedFuture.thenApplyAsync(normalized -> {
-            List<Double> embedding = embeddingClient.createEmbedding(normalized);
+            List<Double> embedding = embeddingsEnabled
+                    ? embeddingClient.createEmbedding(normalized)
+                    : java.util.Collections.nCopies(properties.embeddingDimensions(), 0.0d);
             UUID documentId = UUID.nameUUIDFromBytes((jurisdiction.toLowerCase(java.util.Locale.ROOT)
                     + "|" + request.sourceUrl() + "|" + request.articleReference().strip() + "|" + normalized)
                     .getBytes(StandardCharsets.UTF_8));
