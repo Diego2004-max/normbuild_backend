@@ -54,6 +54,17 @@ class RegulatoryTerritorialContextFilterTest {
         assertThat(result).containsExactly(home);
     }
 
+    @Test
+    void excludesConservationTreatmentRulesFromAnOrdinaryHomeProject() {
+        RegulatoryDocumentProjection home = document("Artículo 258", "Aislamiento posterior para vivienda unifamiliar.");
+        RegulatoryDocumentProjection conservation = document("Artículo 263", "Normas volumétricas para tratamiento de conservación.");
+
+        List<RegulatoryDocumentProjection> result = RegulatoryRagService.filterProjectContext(
+                List.of(conservation, home), "Vivienda unifamiliar urbana de dos pisos.", 4);
+
+        assertThat(result).containsExactly(home);
+    }
+
     private RegulatoryDocumentProjection document(String reference, String content) {
         RegulatoryDocumentProjection projection = mock(RegulatoryDocumentProjection.class);
         when(projection.getArticleReference()).thenReturn(reference);

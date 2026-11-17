@@ -303,7 +303,7 @@ public class RegulatoryRagService {
                     + (document.getArticleReference() == null ? "" : document.getArticleReference()) + " "
                     + (document.getContent() == null ? "" : document.getContent()));
             boolean unrelatedSpecializedRule = java.util.regex.Pattern.compile(
-                    "(?iu)\\b(?:bienes? de inter[eé]s cultural|equipamientos? deportivos?|equipamientos? recreativos?|plan(?:es)? de implantaci[oó]n|regularizaci[oó]n y manejo)\\b")
+                    "(?iu)\\b(?:bienes? de inter[eé]s cultural|tratamiento de conservaci[oó]n|niveles? de conservaci[oó]n|equipamientos? deportivos?|equipamientos? recreativos?|plan(?:es)? de implantaci[oó]n|regularizaci[oó]n y manejo)\\b")
                     .matcher(searchable).find();
             boolean concreteProductionRule = java.util.regex.Pattern.compile(
                     "(?iu)\\b(?:plantas? de producci[oó]n de concreto|planta m[oó]vil de concreto|concreto en obra)\\b")
