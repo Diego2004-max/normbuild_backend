@@ -113,7 +113,7 @@ class RegulatoryRagServiceTest {
         ArgumentCaptor<String> retrievalQuery = ArgumentCaptor.forClass(String.class);
         verify(embeddingClient).createEmbedding(retrievalQuery.capture());
         assertThat(retrievalQuery.getValue()).contains("Decree 1077 of 2015", "required documents", "construction license application");
-        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(false), eq(true), eq(3));
+        verify(repository).findNearestRegulations(anyString(), anyString(), anyDouble(), eq(true), eq(false), eq(true), eq(4));
     }
 
     @Test

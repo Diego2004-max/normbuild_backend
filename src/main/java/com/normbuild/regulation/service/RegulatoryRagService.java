@@ -98,7 +98,8 @@ public class RegulatoryRagService {
         boolean prioritizeBuildingRules = isBuildingRulesQuery(request.projectDescription());
         boolean prioritizeLicensing = isLicensingQuery(request.projectDescription());
         String retrievalQuery = buildRetrievalQuery(request.projectDescription(), prioritizeBuildingRules, prioritizeLicensing);
-        int contextLimit = prioritizeLicensing ? Math.min(3, properties.maxContextResults())
+        int contextLimit = prioritizeBuildingRules && prioritizeLicensing ? Math.min(4, properties.maxContextResults())
+                : prioritizeLicensing ? Math.min(3, properties.maxContextResults())
                 : prioritizeBuildingRules ? Math.min(2, properties.maxContextResults()) : properties.maxContextResults();
         CompletableFuture<List<Double>> embeddingFuture = embeddingsEnabled
                 ? CompletableFuture.supplyAsync(() -> embeddingClient.createEmbedding(retrievalQuery), ragTaskExecutor)
@@ -107,7 +108,7 @@ public class RegulatoryRagService {
             String jurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
             if (failure != null) {
                 LOGGER.warn("Embedding provider unavailable; using indexed official sources for {}", jurisdiction);
-                return findIndexedFallback(jurisdiction, contextLimit, prioritizeLicensing);
+                return findIndexedFallback(jurisdiction, contextLimit, prioritizeBuildingRules, prioritizeLicensing);
             }
             String vectorLiteral = embeddingFormatter.toVectorLiteral(embedding);
             List<RegulatoryDocumentProjection> semanticContext = documentRepository.findNearestRegulations(
@@ -122,13 +123,14 @@ public class RegulatoryRagService {
             if (!semanticContext.isEmpty()) {
                 return semanticContext;
             }
-            List<RegulatoryDocumentProjection> officialFallback = findIndexedFallback(jurisdiction, contextLimit, prioritizeLicensing);
+            List<RegulatoryDocumentProjection> officialFallback = findIndexedFallback(
+                    jurisdiction, contextLimit, prioritizeBuildingRules, prioritizeLicensing);
             if (!officialFallback.isEmpty()) {
                 LOGGER.info("Semantic retrieval returned no rows; using indexed official fallback for {}", jurisdiction);
             }
             return officialFallback;
         }, ragTaskExecutor);
-        return contextFuture.thenApply(context -> filterTerritorialContext(context, request.projectDescription()))
+        return contextFuture.thenApply(context -> filterProjectContext(context, request.projectDescription(), contextLimit))
                 .thenCompose(context -> {
             List<CitedRegulationResponse> indexedCitations = mapCitations(context);
             String requestedJurisdiction = JurisdictionNormalizer.canonicalize(request.jurisdiction());
@@ -167,8 +169,10 @@ public class RegulatoryRagService {
     }
 
     private List<RegulatoryDocumentProjection> findIndexedFallback(
-            String jurisdiction, int limit, boolean prioritizeLicensing) {
-        String query = prioritizeLicensing
+            String jurisdiction, int limit, boolean prioritizeBuildingRules, boolean prioritizeLicensing) {
+        String query = prioritizeBuildingRules && prioritizeLicensing
+                ? "vivienda OR edificabilidad OR ocupación OR altura OR aislamientos OR licencia"
+                : prioritizeLicensing
                 ? "licencia OR documentos OR radicación"
                 : "vivienda OR edificabilidad OR ocupación OR altura OR aislamientos";
         List<RegulatoryDocumentProjection> relevant = documentRepository.findRelevantOfficialRegulations(jurisdiction, query, limit);
@@ -293,6 +297,23 @@ public class RegulatoryRagService {
                     "(?iu)\\b(?:centros? poblados? rurales?|suelo rural|edificabilidad rural|parcelaci[oó]n rural)\\b")
                     .matcher(searchable).find();
         }).toList();
+    }
+
+    static List<RegulatoryDocumentProjection> filterProjectContext(
+            List<RegulatoryDocumentProjection> context, String projectDescription, int limit) {
+        List<RegulatoryDocumentProjection> territorial = filterTerritorialContext(context, projectDescription);
+        boolean specializedProject = java.util.regex.Pattern.compile(
+                "(?iu)\\b(?:patrimonio|inter[eé]s cultural|bic|equipamiento|deportivo|recreativo|plan de implantaci[oó]n)\\b")
+                .matcher(projectDescription).find();
+        return territorial.stream().filter(document -> {
+            if (specializedProject) return true;
+            String searchable = ((document.getTitle() == null ? "" : document.getTitle()) + " "
+                    + (document.getArticleReference() == null ? "" : document.getArticleReference()) + " "
+                    + (document.getContent() == null ? "" : document.getContent()));
+            return !java.util.regex.Pattern.compile(
+                    "(?iu)\\b(?:bienes? de inter[eé]s cultural|equipamientos? deportivos?|equipamientos? recreativos?|plan(?:es)? de implantaci[oó]n|regularizaci[oó]n y manejo)\\b")
+                    .matcher(searchable).find();
+        }).limit(limit).toList();
     }
 
     private String buildRetrievalQuery(String description, boolean prioritizeBuildingRules, boolean prioritizeLicensing) {

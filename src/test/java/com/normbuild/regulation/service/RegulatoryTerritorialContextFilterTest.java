@@ -31,6 +31,18 @@ class RegulatoryTerritorialContextFilterTest {
         assertThat(result).containsExactly(rural);
     }
 
+    @Test
+    void excludesHeritageAndEquipmentRulesFromAnOrdinaryHomeProject() {
+        RegulatoryDocumentProjection home = document("Artículo 310", "Edificabilidad para vivienda urbana.");
+        RegulatoryDocumentProjection heritage = document("Artículo 595", "Actuaciones en bienes de interés cultural.");
+        RegulatoryDocumentProjection equipment = document("Artículo 600", "Planes para equipamientos deportivos y recreativos.");
+
+        List<RegulatoryDocumentProjection> result = RegulatoryRagService.filterProjectContext(
+                List.of(heritage, equipment, home), "Vivienda bifamiliar urbana y licencia de construcción.", 4);
+
+        assertThat(result).containsExactly(home);
+    }
+
     private RegulatoryDocumentProjection document(String reference, String content) {
         RegulatoryDocumentProjection projection = mock(RegulatoryDocumentProjection.class);
         when(projection.getArticleReference()).thenReturn(reference);
