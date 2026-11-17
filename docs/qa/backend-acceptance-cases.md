@@ -35,3 +35,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 031. **Cali / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
 032. **Cali / provider-failure:** When the hosted model fails, the API identifies unavailable generation and preserves arithmetic without claiming compliance.
 033. **Bucaramanga / coverage:** Coverage reports indexed source and section counts when documents exist, or NO_OFFICIAL_SOURCE when none exist.
+034. **Bucaramanga / discovery:** Official-source discovery returns traceable HTTPS candidates and labels each result as pending legal review.
