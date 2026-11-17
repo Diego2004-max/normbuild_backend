@@ -26,3 +26,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 022. **Medellin / missing-area:** When first-floor footprint is absent, proposed occupancy remains unknown while other independently supplied figures remain available.
 023. **Medellin / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
 024. **Medellin / provider-failure:** When the hosted model fails, the API identifies unavailable generation and preserves arithmetic without claiming compliance.
+025. **Cali / coverage:** Coverage reports indexed source and section counts when documents exist, or NO_OFFICIAL_SOURCE when none exist.
