@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class RegulatoryPdfIngestionService {
 
-    private static final int INGESTION_BATCH_SIZE = 2;
+    private static final int INGESTION_BATCH_SIZE = 16;
 
     private final DocumentParsingService documentParsingService;
     private final RegulatoryTextChunker textChunker;
