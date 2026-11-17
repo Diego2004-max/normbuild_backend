@@ -12,3 +12,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 008. **Bogota D.C. / provider-failure:** When the hosted model fails, the API identifies unavailable generation and preserves arithmetic without claiming compliance.
 009. **Pasto / coverage:** Coverage reports indexed source and section counts when documents exist, or NO_OFFICIAL_SOURCE when none exist.
 010. **Pasto / discovery:** Official-source discovery returns traceable HTTPS candidates and labels each result as pending legal review.
+011. **Pasto / provenance:** A retrieved excerpt includes its exact official source URL and does not present a search snippet as a verified article.
