@@ -54,3 +54,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 050. **Cartagena / discovery:** Official-source discovery returns traceable HTTPS candidates and labels each result as pending legal review.
 051. **Cartagena / provenance:** A retrieved excerpt includes its exact official source URL and does not present a search snippet as a verified article.
 052. **Cartagena / jurisdiction:** The compliance review uses only sources assigned to this jurisdiction and never applies rules from another municipality.
+053. **Cartagena / arithmetic:** Given a 200 square meter lot, 100 square meter first-floor footprint, and 200 square meter total built area, proposed occupancy is 0.50 and construction is 1.00.
