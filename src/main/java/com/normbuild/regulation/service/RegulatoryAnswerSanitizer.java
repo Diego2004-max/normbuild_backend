@@ -38,6 +38,8 @@ public class RegulatoryAnswerSanitizer {
             "(?iu)\\b[A-Z]{1,3}[-\\u2010-\\u2015\\u2212]\\d+(?:[.]\\d+){1,5}(?:[-\\u2010-\\u2015\\u2212]\\d+)?\\b");
     private static final Pattern UNREQUESTED_LICENSE_SUBTYPE = Pattern.compile(
             "(?iu)licencia de (?:urbanizaci[oó]n|parcelaci[oó]n|subdivisi[oó]n)");
+    private static final Pattern WHOLE_LOT_QUESTION = Pattern.compile(
+            "(?iu)(?:ocupar|construir|cubrir|edificar)[^.!?]{0,35}(?:todo|100\\s*%)[^.!?]{0,20}(?:lote|predio)|(?:todo|100\\s*%)[^.!?]{0,20}(?:lote|predio)");
 
     public String sanitize(String generatedAnswer, ProjectAnalysisResponse analysis,
                           List<CitedRegulationResponse> citations, String projectDescription) {
@@ -72,6 +74,10 @@ public class RegulatoryAnswerSanitizer {
         }
 
         List<String> sections = new ArrayList<>();
+        String directAnswer = buildDirectAnswer(projectDescription);
+        if (!directAnswer.isBlank()) {
+            sections.add(directAnswer);
+        }
         String proposedRatios = formatProposedRatios(analysis);
         if (!proposedRatios.isBlank()) {
             sections.add(proposedRatios);
@@ -92,6 +98,15 @@ public class RegulatoryAnswerSanitizer {
         }
         sections.add(conclusion);
         return String.join("\n\n", sections);
+    }
+
+    private String buildDirectAnswer(String projectDescription) {
+        if (WHOLE_LOT_QUESTION.matcher(projectDescription).find()) {
+            return "Respuesta corta: No se puede asumir que esté permitido ocupar todo el lote. "
+                    + "La ocupación autorizada depende del índice aplicable al predio y también puede estar limitada "
+                    + "por aislamientos, patios, antejardines y otras condiciones de su ficha normativa.";
+        }
+        return "";
     }
 
     private String renumberChecklist(List<String> lines) {

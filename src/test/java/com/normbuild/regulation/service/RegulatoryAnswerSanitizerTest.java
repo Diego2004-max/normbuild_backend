@@ -171,4 +171,16 @@ class RegulatoryAnswerSanitizerTest {
                 "3. Radica la licencia de construcción.");
         assertThat(answer).doesNotContain("6. Confirma", "7. Radica", "12 m");
     }
+
+    @Test
+    void answersWholeLotQuestionsBeforePresentingTheChecklist() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(null, null, null, null, null, null, List.of());
+
+        String answer = sanitizer.sanitize(
+                "Consulta el índice de ocupación y los aislamientos aplicables.", analysis, List.of(),
+                "¿Puedo construir ocupando todo el lote?");
+
+        assertThat(answer).startsWith("Respuesta corta: No se puede asumir");
+        assertThat(answer).contains("índice aplicable al predio", "aislamientos", "ficha normativa");
+    }
 }
