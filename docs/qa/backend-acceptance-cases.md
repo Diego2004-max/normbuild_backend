@@ -61,3 +61,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 057. **Manizales / coverage:** Coverage reports indexed source and section counts when documents exist, or NO_OFFICIAL_SOURCE when none exist.
 058. **Manizales / discovery:** Official-source discovery returns traceable HTTPS candidates and labels each result as pending legal review.
 059. **Manizales / provenance:** A retrieved excerpt includes its exact official source URL and does not present a search snippet as a verified article.
+060. **Manizales / jurisdiction:** The compliance review uses only sources assigned to this jurisdiction and never applies rules from another municipality.
