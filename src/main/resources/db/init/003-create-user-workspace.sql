@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS app_users (
     CHECK (email = LOWER(email))
 );
 
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS google_subject VARCHAR(255);
+ALTER TABLE app_users ALTER COLUMN password_hash DROP NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_app_users_google_subject ON app_users (google_subject)
+    WHERE google_subject IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS user_sessions (
     token_hash CHAR(64) PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
