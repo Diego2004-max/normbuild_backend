@@ -64,3 +64,4 @@ These are manual acceptance scenarios, not evidence that the checks have passed.
 060. **Manizales / jurisdiction:** The compliance review uses only sources assigned to this jurisdiction and never applies rules from another municipality.
 061. **Manizales / arithmetic:** Given a 200 square meter lot, 100 square meter first-floor footprint, and 200 square meter total built area, proposed occupancy is 0.50 and construction is 1.00.
 062. **Manizales / missing-area:** When first-floor footprint is absent, proposed occupancy remains unknown while other independently supplied figures remain available.
+063. **Manizales / legal-limit:** The answer withholds parcel-specific height, setback, and maximum-index claims without a matching official planning sheet.
