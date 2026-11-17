@@ -80,7 +80,7 @@ public class RegulatoryAnswerSanitizer {
         if (!missingAreas.isBlank()) {
             sections.add(missingAreas);
         }
-        String safeChecklist = String.join("\n", safeLines)
+        String safeChecklist = renumberChecklist(safeLines)
                 .replaceAll("(?im)^.*(?:pasos:|Verificaci.n de .ndices)\\s*(?:\\R\\s*\\R|$)", "");
         if (!safeChecklist.isBlank()) {
             sections.add(safeChecklist);
@@ -92,6 +92,17 @@ public class RegulatoryAnswerSanitizer {
         }
         sections.add(conclusion);
         return String.join("\n\n", sections);
+    }
+
+    private String renumberChecklist(List<String> lines) {
+        int nextNumber = 1;
+        List<String> normalized = new ArrayList<>();
+        Pattern numberedItem = Pattern.compile("^\\s*\\d+[.)]\\s+(.+)$");
+        for (String line : lines) {
+            Matcher matcher = numberedItem.matcher(line);
+            normalized.add(matcher.matches() ? nextNumber++ + ". " + matcher.group(1) : line);
+        }
+        return String.join("\n", normalized);
     }
 
     private boolean hasUnsupportedMapReference(String line, List<CitedRegulationResponse> citations) {

@@ -159,4 +159,16 @@ class RegulatoryAnswerSanitizerTest {
         assertThat(answer).doesNotContain("licencia de urbanización");
         assertThat(answer).contains("licencia de construcción");
     }
+
+    @Test
+    void renumbersChecklistItemsAfterUnsafeLinesAreRemoved() {
+        ProjectAnalysisResponse analysis = new ProjectAnalysisResponse(null, null, null, null, null, null, List.of());
+        String answer = sanitizer.sanitize(
+                "1. Consulta la ficha normativa.\n2. La altura máxima permitida es 12 m.\n6. Confirma el uso del suelo.\n7. Radica la licencia de construcción.",
+                analysis, List.of(), "Vivienda bifamiliar urbana.");
+
+        assertThat(answer).contains("1. Consulta la ficha normativa.", "2. Confirma el uso del suelo.",
+                "3. Radica la licencia de construcción.");
+        assertThat(answer).doesNotContain("6. Confirma", "7. Radica", "12 m");
+    }
 }

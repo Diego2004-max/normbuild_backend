@@ -305,14 +305,21 @@ public class RegulatoryRagService {
         boolean specializedProject = java.util.regex.Pattern.compile(
                 "(?iu)\\b(?:patrimonio|inter[eé]s cultural|bic|equipamiento|deportivo|recreativo|plan de implantaci[oó]n)\\b")
                 .matcher(projectDescription).find();
+        boolean concreteProductionProject = java.util.regex.Pattern.compile(
+                "(?iu)\\b(?:planta|producci[oó]n)\\s+(?:m[oó]vil\\s+)?de\\s+concreto\\b")
+                .matcher(projectDescription).find();
         return territorial.stream().filter(document -> {
             if (specializedProject) return true;
             String searchable = ((document.getTitle() == null ? "" : document.getTitle()) + " "
                     + (document.getArticleReference() == null ? "" : document.getArticleReference()) + " "
                     + (document.getContent() == null ? "" : document.getContent()));
-            return !java.util.regex.Pattern.compile(
+            boolean unrelatedSpecializedRule = java.util.regex.Pattern.compile(
                     "(?iu)\\b(?:bienes? de inter[eé]s cultural|equipamientos? deportivos?|equipamientos? recreativos?|plan(?:es)? de implantaci[oó]n|regularizaci[oó]n y manejo)\\b")
                     .matcher(searchable).find();
+            boolean concreteProductionRule = java.util.regex.Pattern.compile(
+                    "(?iu)\\b(?:plantas? de producci[oó]n de concreto|planta m[oó]vil de concreto|concreto en obra)\\b")
+                    .matcher(searchable).find();
+            return !unrelatedSpecializedRule && (concreteProductionProject || !concreteProductionRule);
         }).limit(limit).toList();
     }
 
