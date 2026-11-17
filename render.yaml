@@ -25,6 +25,8 @@ services:
         sync: false
       - key: GROQ_API_KEY
         sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
       - key: NORMBUILD_HOSTED_MODEL
         value: openai/gpt-oss-20b
       - key: BRAVE_SEARCH_API_KEY
